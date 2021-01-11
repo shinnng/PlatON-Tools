@@ -29,6 +29,8 @@ def create_account():
     print(f"create account = {address}, {prikey}")
     return address, prikey
 
+# 创建HD钱包
+# TODO: coding
 # def create_hd_account():
 #     print("==== create hd account =====")
 #     # account = WEB3.platon.account.(net_type=HRP)
@@ -39,7 +41,6 @@ def create_account():
 #     print(root_keys)
 #     acct_priv_key = root_keys[-1]
 #     print(acct_priv_key)
-
     # for j in range(30):
     #     keys = HDKey.from_path(acct_priv_key, '{change}/{index}'.format(change=0, index=j))
     #     private_key = keys[-1]
