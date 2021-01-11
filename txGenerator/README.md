@@ -7,12 +7,12 @@
 
 - 从账户文件进行批量转账
 ```shell
-	python generator.py transfer --account 'accounts.yml' --privatekey 'a689f0879f53710e9e0c1025af410a530d6381eebb5916773195326e123b822b'
+	python generator.py transfer --account "accounts.yml" --privatekey "a689f0879f53710e9e0c1025af410a530d6381eebb5916773195326e123b822b"
 ```
 
 - 从账户文件进行批量锁仓
 ```shell
-	python generator.py restricting --account 'accounts.yml' --privatekey 'a689f0879f53710e9e0c1025af410a530d6381eebb5916773195326e123b822b' --epoch 10
+	python generator.py restricting --account "accounts.yml" --privatekey "a689f0879f53710e9e0c1025af410a530d6381eebb5916773195326e123b822b" --epoch 10
 ```
 
 - 从质押配置文件进行批量质押
