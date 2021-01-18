@@ -10,7 +10,7 @@ from alaya.packages.platon_keys.utils.address import MIANNETHRP, TESTNETHRP
 
 
 # 通用信息
-NODE_URL = 'http://10.10.8.209:6789'
+NODE_URL = 'http://192.168.120.121:6789'
 CHAIN_ID = 201018
 HRP = MIANNETHRP if CHAIN_ID == 201018 else TESTNETHRP
 WEB3 = Web3(HTTPProvider(NODE_URL), chain_id=CHAIN_ID)
@@ -23,7 +23,7 @@ PIP_TX_CFG = {'gasPrice': 3000000000000000}
 # 创建账户
 def create_account():
     print("==== create account =====")
-    account = WEB3.platon.account.create(net_type=HRP)
+    account = PLATON.account.create(net_type=HRP)
     address = account.address
     prikey = account.privateKey.hex()[2:]
     print(f"create account = {address}, {prikey}")
@@ -53,7 +53,7 @@ def create_account():
 def transfer(from_privatekey, to_address, amount):
     print("==== transfer =====")
     from_address = Account.privateKeyToAccount(from_privatekey, HRP).address
-    nonce = WEB3.platon.getTransactionCount(from_address)
+    nonce = PLATON.getTransactionCount(from_address)
     transaction_dict = {
         "to": to_address,
         "gasPrice": WEB3.eth.gasPrice,
@@ -67,8 +67,8 @@ def transfer(from_privatekey, to_address, amount):
         transaction_dict, from_privatekey
     )
     data = signedTransactionDict.rawTransaction
-    result = HexBytes(WEB3.platon.sendRawTransaction(data)).hex()
-    result = WEB3.platon.waitForTransactionReceipt(result)
+    result = HexBytes(PLATON.sendRawTransaction(data)).hex()
+    result = PLATON.waitForTransactionReceipt(result)
     print(f"transfer staking result = {result}")
 
 # 锁仓交易
@@ -81,93 +81,97 @@ def create_restricting_plan(from_private_key, to_address, restricting_plan):
 # 创建质押
 def create_staking(staking_private_key, balance_type, node_url, amount=10 ** 18 * 2000000, reward_per=1000):
     print("==== create staking =====")
-    w3 = WEB3(HTTPProvider(node_url), CHAIN_ID=CHAIN_ID)
-    program_version = w3.admin.getProgramVersion()['Version']
-    version_sign = w3.admin.getProgramVersion()['Sign']
+    w3 = Web3(HTTPProvider(node_url), chain_id=CHAIN_ID)
+    version_info = w3.admin.getProgramVersion()
+    version = version_info['Version']
+    version_sign = version_info['Sign']
     bls_proof = w3.admin.getSchnorrNIZKProve()
-    node_id = w3.admin.nodeInfo()['id']
-    bls_pubkey = w3.admin.nodeInfo()['blsPubKey']
+    node_info = w3.admin.nodeInfo
+    node_id = node_info['id']
+    bls_pubkey = node_info['blsPubKey']
     benifit_address = Account.privateKeyToAccount(staking_private_key, HRP).address
-    result = WEB3.ppos.createStaking(balance_type, benifit_address, node_id, 'external_id', 'node_name', 'website', 'details',
-                                   amount, program_version, version_sign, bls_pubkey, bls_proof, staking_private_key, reward_per)
+    result = PPOS.createStaking(balance_type, benifit_address, node_id, 'external_id', 'node_name', 'website', 'details',
+                                   amount, version, version_sign, bls_pubkey, bls_proof, staking_private_key, reward_per)
     print(f"create staking result = {result}")
 
 # 增持质押
 def increase_staking(staking_private_key, node_id, balance_type, amount=10 ** 18 * 100):
     print("==== increase staking =====")
-    result = WEB3.ppos.increaseStaking(balance_type, node_id, amount, staking_private_key)
+    result = PPOS.increaseStaking(balance_type, node_id, amount, staking_private_key)
     print(f'incress staking result = {result}')
 
 # 修改质押信息
 def edit_staking(staking_private_key, node_id, benifit_address=None, external_id=None, node_name=None, website=None, details=None, reward_per=None):
         print("==== edit staking =====")
-        result = WEB3.ppos.editCandidate(staking_private_key, node_id, benifit_address, external_id, node_name, website, details, reward_per)
+        result = PPOS.editCandidate(staking_private_key, node_id, benifit_address, external_id, node_name, website, details, reward_per)
         print(f'edit staking result = {result}')
 
 # 解除质押
 def withdrew_staking(staking_private_key, node_id):
     print("==== withdrew staking =====")
-    result = WEB3.ppos.withdrewStaking(node_id, staking_private_key)
+    result = PPOS.withdrewStaking(node_id, staking_private_key)
     print(f'withdrew staking result = {result}')
 
 # 查询质押信息
 def get_staking_info(node_id):
     print("==== get staking info =====")
-    result = WEB3.ppos.getValidatorList()
+    result = PPOS.getValidatorList()
     print(f'get validator list = {result}')
-    result = WEB3.ppos.getVerifierList()
+    result = PPOS.getVerifierList()
     print(f'get verifier list = {result}')
-    result = WEB3.ppos.getCandidateList()
+    result = PPOS.getCandidateList()
     print(f'get candidate list = {result}')
-    result = WEB3.ppos.getCandidateInfo(node_id)
+    result = PPOS.getCandidateInfo(node_id)
     print(f'get candidate info = {result}')
 
 # 创建委托
 def delegation(delegation_private_key, node_id, balance_type, amount=10 * 10 ** 18):
     print("==== delegation =====")
-    resutl = WEB3.ppos.delegate(balance_type, node_id, amount, delegation_private_key)
+    resutl = PPOS.delegate(balance_type, node_id, amount, delegation_private_key)
     print(f'delegation result = {resutl}')
 
 # 解除委托
 def undelegation(delegation_private_key, node_id, amount=1 * 10 ** 18):
     print("==== undelegation =====")
     delegation_address = Account.privateKeyToAccount(delegation_private_key, HRP).address
-    result = WEB3.ppos.getRelatedListByDelAddr(delegation_address)
+    result = PPOS.getRelatedListByDelAddr(delegation_address)
     print(f'get related list = {result}')
     block_number = result.get('Ret')[0].get('StakingBlockNum')
     assert block_number != ''
-    result = WEB3.ppos.withdrewDelegate(block_number, node_id, amount, delegation_private_key)
+    result = PPOS.withdrewDelegate(block_number, node_id, amount, delegation_private_key)
     print(f'undelegation result = {result}')
 
 # 查询委托信息
 def get_delegation_list(delegation_address):
     print("==== get delegation list =====")
-    result = WEB3.ppos.getRelatedListByDelAddr(delegation_address)
+    result = PPOS.getRelatedListByDelAddr(delegation_address)
     print(f'get delegation list = {result}')
+    return result
 
 # 领取委托分红
 def withdraw_delegate_reward(delegate_private_key):
     print("==== withdraw delegate reward =====")
-    result = WEB3.ppos.withdrawDelegateReward(delegate_private_key)
+    result = PPOS.withdrawDelegateReward(delegate_private_key)
     print(f'withdraw delegate result = {result}')
 
 # 创建升级提案
 def create_version_proposal(node_private_key, node_id, upgrade_version, voting_rounds):
     print("==== create version proposal =====")
-    result = WEB3.pip.submitVersion(node_id, str(time.time()), upgrade_version, voting_rounds, node_private_key, PIP_TX_CFG)
+    result = PIP.submitVersion(node_id, str(time.time()), upgrade_version, voting_rounds, node_private_key, PIP_TX_CFG)
     print(f'create version proposal result = {result}')
 
 # 创建文本提案
 def create_test_proposal(node_private_key, node_id):
     print("==== create test proposal =====")
-    result = WEB3.pip.submitText(node_id, str(time.time()), node_private_key, PIP_TX_CFG)
+    result = PIP.submitText(node_id, str(time.time()), node_private_key, PIP_TX_CFG)
     print(f'create version proposal result = {result}')
 
 # 查询提案id
 def get_proposal_list():
     print("==== get proposal list =====")
-    pip_list = WEB3.pip.listProposal()
+    pip_list = PIP.listProposal()
     print(f"proposal list = {pip_list}")
+    return pip_list
 
 # 提案投票
 def version_proposal_vote(node_private_key, node_url, proposal_id, vote_type):
@@ -179,21 +183,21 @@ def version_proposal_vote(node_private_key, node_url, proposal_id, vote_type):
     # proposal_id = w3.pip.listProposal().get('Ret')[0].get('ProposalID')
     # assert proposal_id != ''
     print(f'vote node: {node_url}, {node_id}')
-    result = WEB3.pip.vote(node_id, proposal_id, vote_type, program_version, version_sign, node_private_key)
+    result = PIP.vote(node_id, proposal_id, vote_type, program_version, version_sign, node_private_key)
     print(f'version proposal vote result = {result}, {proposal_id}')
 
 # 版本声明
-def declear_version(node_private_key, node_url):
-    w3 = Web3(HTTPProvider(node_url), chain_id=CHAIN_ID)
-    program_version = w3.admin.getProgramVersion()['Version']
-    version_sign = w3.admin.getProgramVersion()['Sign']
-    PIP.declareVersion()
+# def declear_version(node_private_key, node_url):
+#     w3 = Web3(HTTPProvider(node_url), chain_id=CHAIN_ID)
+#     program_version = w3.admin.getProgramVersion()['Version']
+#     version_sign = w3.admin.getProgramVersion()['Sign']
+#     PIP.declareVersion()
 
 
 # 获取版本号
 def get_version():
     print("==== get version =====")
-    result = WEB3.pip.getActiveVersion()
+    result = PIP.getActiveVersion()
     print(f'version = {result}')
 
 
@@ -227,19 +231,10 @@ if __name__ == '__main__':
     # transfer(main_private_key, 'atx1h0ssa942rrwy7yt8m4tjcsvpkr5z5qhmwx55av', 200 * 10 ** 18)
     # create_hd_account()
     # 普通交易
-    # transfer(main_private_key, 'atx1t5kdy77uycd06aezuv2lddnsus9w02tmxpdgz2', 10000 * 10 ** 18)
-    # 锁仓交易
-
-    # address, private_key = 'atx1h0ssa942rrwy7yt8m4tjcsvpkr5z5qhmwx55av', '90e3261fa45268cf64e26e6415e15ff4a6e876ae916fe743db1d67ab6c45cd43'
-    # address, private_key = create_account()
-    # transfer(main_private_key, address, 200 * 10 ** 18)
-    # print('-------------------------------------')
-
-    # print(f'## Balance: {PLATON.getBalance(address)}')
-    # print(f'## Restricting: {PPOS.getRestrictingInfo(address)}')
-    #
-    # plan = [{'Epoch': 1, 'Amount': 80 * 10 ** 18}, {'Epoch': 2, 'Amount': 80 * 10 ** 18}]
-    # create_restricting_plan(private_key, address, plan)
+    # transfer(main_private_key, 'atx1wz5as9rhsfdfl3n2fymhhfdvfg75c6ndq83xqu', 2100 * 10 ** 18)
+    # # 锁仓交易
+    # plan = [{'Epoch': 4, 'Amount': 4000 * 10 ** 18}, {'Epoch': 8, 'Amount': 4000 * 10 ** 18}]
+    # create_restricting_plan(main_private_key, "atx1wz5as9rhsfdfl3n2fymhhfdvfg75c6ndq83xqu", plan)
     #
     # print(f'## Balance: {PLATON.getBalance(address)}')
     # print(f'## Restricting: {PPOS.getRestrictingInfo(address)}')
@@ -328,40 +323,50 @@ if __name__ == '__main__':
     # upgrade_version = 3584
     # upgrade_voting_rounds = 10
     # # # # 升级提案
-    staking_private_key = '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'
-    node_id = '1266a2a491635f18831ac87f99f313f1055c4b07872ca605617884eeb37e3577cf774483243b209bb5a847a529099759647f68e551d70fb978a2f228dd822e6d'
+    # staking_private_key = '95ebd28147804fda08d6f6cbb690a3650e0415e0474ab9b08ab8d6e3650929cf'
+    # node_id = '50b6d2f6490040ac0813d0aa0042d6020b0e537d5922805b00de7180bbdb29fca4877fdbf2d2dcd570b8ac9a904c02c69a60c9089239bfff04e0252886ef1158'
     # create_version_proposal(staking_private_key, node_id, upgrade_version, upgrade_voting_rounds)
     # get_proposal_list()
-    create_test_proposal(staking_private_key, node_id)
-    get_proposal_list()
+    # create_test_proposal(staking_private_key, node_id)
+    # get_proposal_list()
     # # 提案投票
     # node_list = [('http://10.0.0.11:6789', '7fe5cc8f1c69b7b7e5b75224c7e8caa8db8b9c0d13d666ecd0703bca2409d690'),
     #              ('http://10.0.0.12:6789', 'b61c15829a7684f67ee9cc960eb8c6140b7e3372517aa6180d4150a61e642eb7'),
-    #              ('http://10.10.8.236:6789', '95ebd28147804fda08d6f6cbb690a3650e0415e0474ab9b08ab8d6e3650929cf'),
     #              ('http://10.0.0.13:6789', '7f677ee1f931a5eb7b0d8584d631153c1b8725ae1b6efdd9b5ab2e24b567e4d7'),
-    #              ('http://10.0.0.30:6789', 'a2b4a7d2a0d118bf87dc9e61ba54b7a9b9ae989715d0ab3f26ade4cb131ba038'),
-    #              ('http://10.0.0.15:6789', '9a331ee9886f2c5f01b12cc664d85c3ed7e4dcf6a1f21574690bb4949bb6e24b'),
-    #              ('http://10.0.0.29:6789', '7252ca84514f9be82a5afe3afb310e71f001e1bbe8addead526bc397ff92b1f6'),
-    #              ('http://10.0.0.21:6789', '7f77176b29e777e7b855e84fc0688acd0a4093fe9d2cd44af59e751013d563d7'),
-    #              ('http://10.0.0.28:6789', '04a4bb0ebd5fcc90a0aad99ae943b4a160fa18d615925474b211070fc89d94e4'),
-    #              ('http://10.0.0.27:6789', '89f5ccee535c7ad4258724513e5bcfcd37debaf05ccf39ae2442f9b70878a696'),
-    #              ('http://10.0.0.18:6789', 'dce1a70c69541d9c28c3e569fe308f55e9538a697a6547191d8530eba60acf28'),
-    #              ('http://10.0.0.24:6789', 'b9eb78b6ef82688833677909c0806f505a5397f155301990640b3926ddc24a83'),
-    #              ('http://10.10.8.238:6789', '5a38bea58575713a3b5ac9f70070efb73763d4e316ecbc3fc9096f4dd629f564'),
-    #              ('http://10.0.0.26:6789', '7e980742f62e5d54d05bad38c3c56268ccf34ff4be6b859d40493c9ebace1ce1'),
     #              ('http://10.0.0.14:6789', '971bd2cf5c08841ef7ea08f2a863c4fdfe70bfacaa1ff87800c889a0ecab462a'),
-    #              ('http://10.0.0.25:6789', '66c3de2b9827c604b00140165f952dc8fe591724f8707891ed86bc4f1cc0dc00'),
+    #              ('http://10.0.0.15:6789', '9a331ee9886f2c5f01b12cc664d85c3ed7e4dcf6a1f21574690bb4949bb6e24b'),
+    #              ('http://10.0.0.16:6789', '3a3fbabfddf9934c6ca1395b486db656be9e3a7fc66f7340a6332209432c3575'),
+    #              ('http://10.0.0.17:6789', '2c892dcaa800bce2ea75da443a87c31a57c6312910fa99fbc31d6d6a70302900'),
+    #              ('http://10.0.0.18:6789', 'dce1a70c69541d9c28c3e569fe308f55e9538a697a6547191d8530eba60acf28'),
     #              ('http://10.0.0.19:6789', '2cc3620a96aceaadfa46e48395ac25265b9a134a8a9de93268adcf3f60ea745b'),
-    #              ('http://10.10.8.237:6789', 'eeeaf73dc70973bf40ee0d70c0ba1b564d47d91a85a15230a1fa49045e0717e7'),
-    #              ('http://10.10.8.240:6789', '2c00916d6c5a977b7e69125ceafeace1a9d545dd9a5ccd4b2fb16742e70d9cc3'),
+    #              ('http://10.0.0.20:6789', '98786b14fc2ceaa30c00031023a5965161cad3a8dd5d941535e372b9632f029d'),
+    #              ('http://10.0.0.21:6789', '7f77176b29e777e7b855e84fc0688acd0a4093fe9d2cd44af59e751013d563d7'),
+    #              ('http://10.0.0.22:6789', '9956ba98090f318af998bae835d1ace3c9fdff2f2daae677d6670aaad9951df2'),
+    #              ('http://10.0.0.23:6789', '971bd2cf5c08841ef7ea08f2a863c4fdfe70bfacaa1ff87800c889a0ecab462a'),
+    #              ('http://10.0.0.24:6789', 'b9eb78b6ef82688833677909c0806f505a5397f155301990640b3926ddc24a83'),
+    #              ('http://10.0.0.25:6789', '66c3de2b9827c604b00140165f952dc8fe591724f8707891ed86bc4f1cc0dc00'),
+    #              ('http://10.0.0.26:6789', '7e980742f62e5d54d05bad38c3c56268ccf34ff4be6b859d40493c9ebace1ce1'),
+    #              ('http://10.0.0.27:6789', '89f5ccee535c7ad4258724513e5bcfcd37debaf05ccf39ae2442f9b70878a696'),
+    #              ('http://10.0.0.28:6789', '04a4bb0ebd5fcc90a0aad99ae943b4a160fa18d615925474b211070fc89d94e4'),
+    #              ('http://10.0.0.29:6789', '7252ca84514f9be82a5afe3afb310e71f001e1bbe8addead526bc397ff92b1f6'),
+    #              ('http://10.0.0.30:6789', 'a2b4a7d2a0d118bf87dc9e61ba54b7a9b9ae989715d0ab3f26ade4cb131ba038'),
+    #              ('http://10.0.0.31:6789', 'a4a026cb5c7d10c7ebef0069528e43358b63de2dd707715b566fd177429d66b2'),
+    #              ('http://10.0.0.32:6789', '7cb35bcebe5900bcdc7ea7fd47486128f4b22b8ecd1595bb47e8f8866b190d17'),
+    #              ('http://10.0.0.33:6789', '4fe61a44da26bf1a09771f6b26d22a40e03250dc1ef2141208611485f0ea79d1'),
     #              ('http://10.1.1.51:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
     #              ('http://10.1.1.52:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
     #              ('http://10.1.1.53:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
     #              ('http://10.1.1.54:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
     #              ('http://10.1.1.55:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
     #              ('http://10.1.1.56:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
-    #              ('http://10.1.1.57:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e')]
-    # proposal_id = '0x2f05095d55d5f872fd146754351ab737157dee5e262be0c3cdbaff404a77e0e9'
+    #              ('http://10.1.1.57:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.60:6789', '3f2ed71cba9c15decf008819a3c4d93dd0dffbb7888acb22ea4a0ad4c7bf35e8'),
+    #              ('http://10.10.8.236:6789', '95ebd28147804fda08d6f6cbb690a3650e0415e0474ab9b08ab8d6e3650929cf'),
+    #              ('http://10.10.8.237:6789', 'eeeaf73dc70973bf40ee0d70c0ba1b564d47d91a85a15230a1fa49045e0717e7'),
+    #              ('http://10.10.8.238:6789', '5a38bea58575713a3b5ac9f70070efb73763d4e316ecbc3fc9096f4dd629f564'),
+    #              ('http://10.10.8.240:6789', '2c00916d6c5a977b7e69125ceafeace1a9d545dd9a5ccd4b2fb16742e70d9cc3'),
+    #              ]
+    # proposal_id = '0x81c474e16f42abd200138b0f54438793afd545bb733dd3af44844a46f0e0ae44'
     # for node_url, private_key in node_list:
     #     try:
     #         version_proposal_vote(private_key, node_url, proposal_id, 1)
@@ -369,6 +374,13 @@ if __name__ == '__main__':
     #         print(f'ERROR: {node_url}, {e}')
     # # 查询提案
     # get_proposal_list()
+    # # 版本声明
+    # node_list = [('http://10.1.1.56:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.57:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.0.0.23:6789', '971bd2cf5c08841ef7ea08f2a863c4fdfe70bfacaa1ff87800c889a0ecab462a'),
+    #              ]
+    # for node_url, private_key in node_list:
+    #     declear_version(private_key, node_url)
 
     # # **** 调试信息 ****
     # print(PLATON.blockNumber)
@@ -378,9 +390,9 @@ if __name__ == '__main__':
     # print(platon.getTransactionCount('atx1zkrxx6rf358jcvr7nruhyvr9hxpwv9unj58er9'))
     # print(platon.waitForTransactionReceipt('0xda81aab7e6d9f5188081fbd281fd0eaaebef1f1be03ff2c98fd1f76c36c16ec5'))
     # print(platon.getCode('atx1rdlcxzxk88e7k7mm0w93ald07g52l6pw97gzzz'))
-    # print(PPOS.getValidatorList())
-    # print(PPOS.getVerifierList())
-    # print(PPOS.getCandidateList())
+    print(PPOS.getValidatorList())
+    print(PPOS.getVerifierList())
+    print(PPOS.getCandidateList())
     # print(ppos.getCandidateInfo('bc9dabae54a13202ec765c1537c57b9f6659161596eae7c0344a606e9396c63c96a2a76aadc320100e9a56c5acdb8faddfb61733bddeff7b9f261ac54a46d775'))
     # print(PIP.listProposal())
     # print(pip.getProposal('0x9552914c57933ad207d2c028cf71445de40b99f3b088155f31f07bdc4ddab2e2')['Ret']['ActiveBlock'])

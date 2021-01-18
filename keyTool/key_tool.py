@@ -31,15 +31,11 @@ def bech32_address_to_hex_address(address: str):
     Args:
         address: bech32 address string
     """
-    prefix = address[0:2]
-    print(prefix)
+    prefix = address[0:3]
     return Address.bech32_address_to_address_bytes(address, prefix)
 
 
 if __name__ == '__main__':
-    print(private_key_to_address('255674f79fe4f81b21529a6fa8cd4a3baa5f2973a81012a4a207f154ca8c9210'))
-    print(private_key_to_address('255674f79fe4f81b21529a6fa8cd4a3baa5f2973a81012a4a207f154ca8c9210', 'lat'))
-    print(private_key_to_address('255674f79fe4f81b21529a6fa8cd4a3baa5f2973a81012a4a207f154ca8c9210', 'lax'))
-    print(private_key_to_address('255674f79fe4f81b21529a6fa8cd4a3baa5f2973a81012a4a207f154ca8c9210', 'atp'))
-    print(private_key_to_address('255674f79fe4f81b21529a6fa8cd4a3baa5f2973a81012a4a207f154ca8c9210', 'atx'))
+    # print(private_key_to_address('64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e', 'atx'))
+    print(hex_address_to_bech32_address('1000000000000000000000000000000000000003', 'atp'))
 
