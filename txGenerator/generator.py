@@ -1,7 +1,7 @@
 from random import randint, uniform, sample
 
 import click
-from alaya import Web3, HTTPProvider, eth as Eth, ppos as Ppos, admin as Admin, debug as Debug
+from client_sdk_python import Web3, HTTPProvider, eth as Eth, ppos as Ppos, admin as Admin, debug as Debug
 # from platon import Web3, HTTPProvider, eth as Eth, ppos as Ppos, admin as Admin, debug as Debug
 from hexbytes import HexBytes
 from ruamel import yaml

@@ -1,5 +1,5 @@
-from alaya.packages.platon_keys.datatypes import PrivateKey
-from alaya.packages.platon_keys.utils import address as Address
+from client_sdk_python.packages.platon_keys.datatypes import PrivateKey
+from client_sdk_python.packages.platon_keys.utils import address as Address
 
 
 def private_key_to_address(private_key: str, prefix=None):
