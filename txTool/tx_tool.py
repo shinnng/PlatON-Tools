@@ -1,18 +1,15 @@
 import random
 import time
-from alaya import HTTPProvider, Web3
-from alaya import eth, ppos, pip
-from alaya.middleware import geth_poa_middleware
+from client_sdk_python import HTTPProvider, Web3
+from client_sdk_python import eth, ppos, pip
+from client_sdk_python.middleware import geth_poa_middleware
 from hexbytes import HexBytes
-from alaya.packages.platon_account.account import Account
-from alaya.packages.platon_keys.utils.address import MIANNETHRP, TESTNETHRP
-# from crypto import HDPrivateKey, HDKey
+from client_sdk_python.packages.platon_account.account import Account
 
 
 # 通用信息
 NODE_URL = 'http://192.168.120.121:6789'
 CHAIN_ID = 201018
-HRP = MIANNETHRP if CHAIN_ID == 201018 else TESTNETHRP
 WEB3 = Web3(HTTPProvider(NODE_URL), chain_id=CHAIN_ID)
 WEB3.middleware_stack.inject(geth_poa_middleware, layer=0)
 PLATON = eth.PlatON(WEB3)
@@ -23,7 +20,7 @@ PIP_TX_CFG = {'gasPrice': 3000000000000000}
 # 创建账户
 def create_account():
     print("==== create account =====")
-    account = PLATON.account.create(net_type=HRP)
+    account = PLATON.account.create()
     address = account.address
     prikey = account.privateKey.hex()[2:]
     print(f"create account = {address}, {prikey}")
@@ -52,7 +49,7 @@ def create_account():
 # 转账交易
 def transfer(from_privatekey, to_address, amount):
     print("==== transfer =====")
-    from_address = Account.privateKeyToAccount(from_privatekey, HRP).address
+    from_address = Account.privateKeyToAccount(from_privatekey).address
     nonce = PLATON.getTransactionCount(from_address)
     transaction_dict = {
         "to": to_address,
@@ -85,11 +82,11 @@ def create_staking(staking_private_key, balance_type, node_url, amount=10 ** 18 
     version_info = w3.admin.getProgramVersion()
     version = version_info['Version']
     version_sign = version_info['Sign']
-    bls_proof = w3.admin.getSchnorrNIZKProve()
     node_info = w3.admin.nodeInfo
     node_id = node_info['id']
     bls_pubkey = node_info['blsPubKey']
-    benifit_address = Account.privateKeyToAccount(staking_private_key, HRP).address
+    bls_proof = w3.admin.getSchnorrNIZKProve()
+    benifit_address = Account.privateKeyToAccount(staking_private_key).address
     result = PPOS.createStaking(balance_type, benifit_address, node_id, 'external_id', 'node_name', 'website', 'details',
                                    amount, version, version_sign, bls_pubkey, bls_proof, staking_private_key, reward_per)
     print(f"create staking result = {result}")
@@ -133,7 +130,7 @@ def delegation(delegation_private_key, node_id, balance_type, amount=10 * 10 ** 
 # 解除委托
 def undelegation(delegation_private_key, node_id, amount=1 * 10 ** 18):
     print("==== undelegation =====")
-    delegation_address = Account.privateKeyToAccount(delegation_private_key, HRP).address
+    delegation_address = Account.privateKeyToAccount(delegation_private_key).address
     result = PPOS.getRelatedListByDelAddr(delegation_address)
     print(f'get related list = {result}')
     block_number = result.get('Ret')[0].get('StakingBlockNum')
@@ -390,11 +387,11 @@ if __name__ == '__main__':
     # print(platon.getTransactionCount('atx1zkrxx6rf358jcvr7nruhyvr9hxpwv9unj58er9'))
     # print(platon.waitForTransactionReceipt('0xda81aab7e6d9f5188081fbd281fd0eaaebef1f1be03ff2c98fd1f76c36c16ec5'))
     # print(platon.getCode('atx1rdlcxzxk88e7k7mm0w93ald07g52l6pw97gzzz'))
-    print(PPOS.getValidatorList())
-    print(PPOS.getVerifierList())
-    print(PPOS.getCandidateList())
+    # print(PPOS.getValidatorList())
+    # print(PPOS.getVerifierList())
+    # print(PPOS.getCandidateList())
     # print(ppos.getCandidateInfo('bc9dabae54a13202ec765c1537c57b9f6659161596eae7c0344a606e9396c63c96a2a76aadc320100e9a56c5acdb8faddfb61733bddeff7b9f261ac54a46d775'))
-    # print(PIP.listProposal())
+    print(PIP.listProposal())
     # print(pip.getProposal('0x9552914c57933ad207d2c028cf71445de40b99f3b088155f31f07bdc4ddab2e2')['Ret']['ActiveBlock'])
     # print(pip.getAccuVerifiersCount('0x7991b9bb943c0fc67df975975e34602ca501610b31ea842079137c59be5e6b0d', PLATON.getBlock(PLATON.blockNumber)['hash'].hex()))
     # print(PIP.getTallyResult('0x15e460705e953944b5523b4b26413d94d9ef9ef88e50e1911bf4e4f0ba4897a7'))
