@@ -184,12 +184,12 @@ def version_proposal_vote(node_private_key, node_url, proposal_id, vote_type):
     print(f'version proposal vote result = {result}, {proposal_id}')
 
 # 版本声明
-# def declear_version(node_private_key, node_url):
-#     w3 = Web3(HTTPProvider(node_url), chain_id=CHAIN_ID)
-#     program_version = w3.admin.getProgramVersion()['Version']
-#     version_sign = w3.admin.getProgramVersion()['Sign']
-#     PIP.declareVersion()
-
+def declear_version(node_private_key, node_url):
+    w3 = Web3(HTTPProvider(node_url), chain_id=CHAIN_ID)
+    node_id = w3.admin.nodeInfo['id']
+    program_version = w3.admin.getProgramVersion()['Version']
+    version_sign = w3.admin.getProgramVersion()['Sign']
+    PIP.declareVersion(node_id, program_version, version_sign, node_private_key)
 
 # 获取版本号
 def get_version():
@@ -372,12 +372,12 @@ if __name__ == '__main__':
     # # 查询提案
     # get_proposal_list()
     # # 版本声明
-    # node_list = [('http://10.1.1.56:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
-    #              ('http://10.1.1.57:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
-    #              ('http://10.0.0.23:6789', '971bd2cf5c08841ef7ea08f2a863c4fdfe70bfacaa1ff87800c889a0ecab462a'),
-    #              ]
-    # for node_url, private_key in node_list:
-    #     declear_version(private_key, node_url)
+    node_list = [('http://10.1.1.56:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+                 ('http://10.1.1.57:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+                 ('http://10.0.0.23:6789', '971bd2cf5c08841ef7ea08f2a863c4fdfe70bfacaa1ff87800c889a0ecab462a'),
+                 ]
+    for node_url, private_key in node_list:
+        declear_version(private_key, node_url)
 
     # # **** 调试信息 ****
     # print(PLATON.blockNumber)
@@ -391,7 +391,7 @@ if __name__ == '__main__':
     # print(PPOS.getVerifierList())
     # print(PPOS.getCandidateList())
     # print(ppos.getCandidateInfo('bc9dabae54a13202ec765c1537c57b9f6659161596eae7c0344a606e9396c63c96a2a76aadc320100e9a56c5acdb8faddfb61733bddeff7b9f261ac54a46d775'))
-    print(PIP.listProposal())
+    # print(PIP.listProposal())
     # print(pip.getProposal('0x9552914c57933ad207d2c028cf71445de40b99f3b088155f31f07bdc4ddab2e2')['Ret']['ActiveBlock'])
     # print(pip.getAccuVerifiersCount('0x7991b9bb943c0fc67df975975e34602ca501610b31ea842079137c59be5e6b0d', PLATON.getBlock(PLATON.blockNumber)['hash'].hex()))
     # print(PIP.getTallyResult('0x15e460705e953944b5523b4b26413d94d9ef9ef88e50e1911bf4e4f0ba4897a7'))
