@@ -1,15 +1,15 @@
 import random
 import time
-from client_sdk_python import HTTPProvider, Web3
-from client_sdk_python import eth, ppos, pip
-from client_sdk_python.middleware import geth_poa_middleware
+from alaya import HTTPProvider, Web3
+from alaya import eth, ppos, pip
+from alaya.middleware import geth_poa_middleware
 from hexbytes import HexBytes
-from client_sdk_python.packages.platon_account.account import Account
+from alaya.packages.platon_account.account import Account
 
 
 # 通用信息
-NODE_URL = 'http://192.168.120.121:6789'
-CHAIN_ID = 201018
+NODE_URL = 'http://10.0.0.20:6789'
+CHAIN_ID = 201030
 WEB3 = Web3(HTTPProvider(NODE_URL), chain_id=CHAIN_ID)
 WEB3.middleware_stack.inject(geth_poa_middleware, layer=0)
 PLATON = eth.PlatON(WEB3)
@@ -67,6 +67,7 @@ def transfer(from_privatekey, to_address, amount):
     result = HexBytes(PLATON.sendRawTransaction(data)).hex()
     result = PLATON.waitForTransactionReceipt(result)
     print(f"transfer staking result = {result}")
+    return result
 
 # 锁仓交易
 def create_restricting_plan(from_private_key, to_address, restricting_plan):
@@ -74,6 +75,7 @@ def create_restricting_plan(from_private_key, to_address, restricting_plan):
     # ppos.need_analyze = False
     result = PPOS.createRestrictingPlan(to_address, restricting_plan, from_private_key)
     print(f"create restricting plan result = {result}")
+    return result
 
 # 创建质押
 def create_staking(staking_private_key, balance_type, node_url, amount=10 ** 18 * 2000000, reward_per=1000):
@@ -90,24 +92,28 @@ def create_staking(staking_private_key, balance_type, node_url, amount=10 ** 18 
     result = PPOS.createStaking(balance_type, benifit_address, node_id, 'external_id', 'node_name', 'website', 'details',
                                    amount, version, version_sign, bls_pubkey, bls_proof, staking_private_key, reward_per)
     print(f"create staking result = {result}")
+    return result
 
 # 增持质押
 def increase_staking(staking_private_key, node_id, balance_type, amount=10 ** 18 * 100):
     print("==== increase staking =====")
     result = PPOS.increaseStaking(balance_type, node_id, amount, staking_private_key)
     print(f'incress staking result = {result}')
+    return result
 
 # 修改质押信息
 def edit_staking(staking_private_key, node_id, benifit_address=None, external_id=None, node_name=None, website=None, details=None, reward_per=None):
         print("==== edit staking =====")
         result = PPOS.editCandidate(staking_private_key, node_id, benifit_address, external_id, node_name, website, details, reward_per)
         print(f'edit staking result = {result}')
+        return result
 
 # 解除质押
 def withdrew_staking(staking_private_key, node_id):
     print("==== withdrew staking =====")
     result = PPOS.withdrewStaking(node_id, staking_private_key)
     print(f'withdrew staking result = {result}')
+    return result
 
 # 查询质押信息
 def get_staking_info(node_id):
@@ -124,8 +130,9 @@ def get_staking_info(node_id):
 # 创建委托
 def delegation(delegation_private_key, node_id, balance_type, amount=10 * 10 ** 18):
     print("==== delegation =====")
-    resutl = PPOS.delegate(balance_type, node_id, amount, delegation_private_key)
-    print(f'delegation result = {resutl}')
+    result = PPOS.delegate(balance_type, node_id, amount, delegation_private_key)
+    print(f'delegation result = {result}')
+    return result
 
 # 解除委托
 def undelegation(delegation_private_key, node_id, amount=1 * 10 ** 18):
@@ -137,6 +144,7 @@ def undelegation(delegation_private_key, node_id, amount=1 * 10 ** 18):
     assert block_number != ''
     result = PPOS.withdrewDelegate(block_number, node_id, amount, delegation_private_key)
     print(f'undelegation result = {result}')
+    return result
 
 # 查询委托信息
 def get_delegation_list(delegation_address):
@@ -150,18 +158,21 @@ def withdraw_delegate_reward(delegate_private_key):
     print("==== withdraw delegate reward =====")
     result = PPOS.withdrawDelegateReward(delegate_private_key)
     print(f'withdraw delegate result = {result}')
+    return result
 
 # 创建升级提案
 def create_version_proposal(node_private_key, node_id, upgrade_version, voting_rounds):
     print("==== create version proposal =====")
     result = PIP.submitVersion(node_id, str(time.time()), upgrade_version, voting_rounds, node_private_key, PIP_TX_CFG)
     print(f'create version proposal result = {result}')
+    return result
 
 # 创建文本提案
 def create_test_proposal(node_private_key, node_id):
     print("==== create test proposal =====")
     result = PIP.submitText(node_id, str(time.time()), node_private_key, PIP_TX_CFG)
     print(f'create version proposal result = {result}')
+    return result
 
 # 查询提案id
 def get_proposal_list():
@@ -182,20 +193,24 @@ def version_proposal_vote(node_private_key, node_url, proposal_id, vote_type):
     print(f'vote node: {node_url}, {node_id}')
     result = PIP.vote(node_id, proposal_id, vote_type, program_version, version_sign, node_private_key)
     print(f'version proposal vote result = {result}, {proposal_id}')
+    return result
 
 # 版本声明
 def declear_version(node_private_key, node_url):
+    print("==== declear version =====")
     w3 = Web3(HTTPProvider(node_url), chain_id=CHAIN_ID)
     node_id = w3.admin.nodeInfo['id']
     program_version = w3.admin.getProgramVersion()['Version']
     version_sign = w3.admin.getProgramVersion()['Sign']
-    PIP.declareVersion(node_id, program_version, version_sign, node_private_key)
+    result = PIP.declareVersion(node_id, program_version, version_sign, node_private_key)
+    print(f'declear version result = {result}')
+    return result
 
 # 获取版本号
 def get_version():
     print("==== get version =====")
     result = PIP.getActiveVersion()
-    print(f'version = {result}')
+    print(f'chain version = {result}')
 
 
 def wait_block(block_number):
@@ -372,13 +387,10 @@ if __name__ == '__main__':
     # # 查询提案
     # get_proposal_list()
     # # 版本声明
-    node_list = [('http://10.1.1.56:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
-                 ('http://10.1.1.57:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
-                 ('http://10.0.0.23:6789', '971bd2cf5c08841ef7ea08f2a863c4fdfe70bfacaa1ff87800c889a0ecab462a'),
+    node_list = [('http://10.0.0.20:6789', '98786b14fc2ceaa30c00031023a5965161cad3a8dd5d941535e372b9632f029d'),
                  ]
     for node_url, private_key in node_list:
-        declear_version(private_key, node_url)
-
+        print(declear_version(private_key, node_url))
     # # **** 调试信息 ****
     # print(PLATON.blockNumber)
     # print(PLATON.getBalance('atx1h0ssa942rrwy7yt8m4tjcsvpkr5z5qhmwx55av'))
