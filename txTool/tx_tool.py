@@ -1,16 +1,17 @@
 import random
 import time
-from alaya import HTTPProvider, Web3
-from alaya import eth, ppos, pip
-from alaya.middleware import geth_poa_middleware
+from client_sdk_python import HTTPProvider, Web3
+from client_sdk_python import eth, ppos, pip
+from client_sdk_python.middleware import geth_poa_middleware
 from hexbytes import HexBytes
-from alaya.packages.platon_account.account import Account
+from client_sdk_python.packages.platon_account.account import Account
 
 
 # 通用信息
 NODE_URL = 'http://10.0.0.20:6789'
-CHAIN_ID = 201030
+CHAIN_ID = 2021
 WEB3 = Web3(HTTPProvider(NODE_URL), chain_id=CHAIN_ID)
+HRP = WEB3.net_type
 WEB3.middleware_stack.inject(geth_poa_middleware, layer=0)
 PLATON = eth.PlatON(WEB3)
 PPOS = ppos.Ppos(WEB3)
@@ -49,7 +50,7 @@ def create_account():
 # 转账交易
 def transfer(from_privatekey, to_address, amount):
     print("==== transfer =====")
-    from_address = Account.privateKeyToAccount(from_privatekey).address
+    from_address = Account.privateKeyToAccount(from_privatekey, HRP).address
     nonce = PLATON.getTransactionCount(from_address)
     transaction_dict = {
         "to": to_address,
@@ -88,7 +89,7 @@ def create_staking(staking_private_key, balance_type, node_url, amount=10 ** 18 
     node_id = node_info['id']
     bls_pubkey = node_info['blsPubKey']
     bls_proof = w3.admin.getSchnorrNIZKProve()
-    benifit_address = Account.privateKeyToAccount(staking_private_key).address
+    benifit_address = Account.privateKeyToAccount(staking_private_key, HRP).address
     result = PPOS.createStaking(balance_type, benifit_address, node_id, 'external_id', 'node_name', 'website', 'details',
                                    amount, version, version_sign, bls_pubkey, bls_proof, staking_private_key, reward_per)
     print(f"create staking result = {result}")
@@ -224,7 +225,7 @@ def wait_block(block_number):
 
 
 if __name__ == '__main__':
-    main_address, main_private_key = 'atx1zkrxx6rf358jcvr7nruhyvr9hxpwv9unj58er9', 'f51ca759562e1daf9e5302d121f933a8152915d34fcbc27e542baf256b5e4b74'
+    main_private_key = 'defc69adf94e2b01fcb6e47d50f2880ac864a98447f8b2c3640ce5d6d2600190'
 
     # # **** 交易模块 ****
     # from_address, from_private_key = create_account()
@@ -269,18 +270,90 @@ if __name__ == '__main__':
     # staking_address, staking_private_key = create_account()
     # # delegation_address, delegation_private_key = 'atx16g303js6tushq236fhv5cmr8tw272cg9279tcl', 'b854c86a25498ce21035d3fabc7dbe784b4288ad3bd9580437bd0250014e40c1'
     # # # 创建质押
-    # transfer(main_private_key, staking_address, 10 * 10 ** 18)
-    # plan = [{'Epoch': 2, 'Amount': 2000 * 10 ** 18},
-    #         {'Epoch': 500, 'Amount': 2000 * 10 ** 18},
-    #         {'Epoch': 1000, 'Amount': 2000 * 10 ** 18},
-    #         {'Epoch': 2000, 'Amount': 2000 * 10 ** 18},
-    #         {'Epoch': 3000, 'Amount': 2000 * 10 ** 18},
-    #         {'Epoch': 5000, 'Amount': 5000 * 10 ** 18},
-    #         {'Epoch': 10000, 'Amount': 5000 * 10 ** 18}]
-    # create_restricting_plan(main_private_key, staking_address, plan)
+    # node_list = [('http://10.0.0.11:6789', '7fe5cc8f1c69b7b7e5b75224c7e8caa8db8b9c0d13d666ecd0703bca2409d690'),
+    #              ('http://10.0.0.12:6789', 'b61c15829a7684f67ee9cc960eb8c6140b7e3372517aa6180d4150a61e642eb7'),
+    #              ('http://10.0.0.13:6789', '7f677ee1f931a5eb7b0d8584d631153c1b8725ae1b6efdd9b5ab2e24b567e4d7'),
+    #              ('http://10.0.0.14:6789', '971bd2cf5c08841ef7ea08f2a863c4fdfe70bfacaa1ff87800c889a0ecab462a'),
+    #              ('http://10.0.0.15:6789', '9a331ee9886f2c5f01b12cc664d85c3ed7e4dcf6a1f21574690bb4949bb6e24b'),
+    #              ('http://10.0.0.16:6789', '3a3fbabfddf9934c6ca1395b486db656be9e3a7fc66f7340a6332209432c3575'),
+    #              ('http://10.0.0.17:6789', '2c892dcaa800bce2ea75da443a87c31a57c6312910fa99fbc31d6d6a70302900'),
+    #              ('http://10.0.0.18:6789', 'dce1a70c69541d9c28c3e569fe308f55e9538a697a6547191d8530eba60acf28'),
+    #              ('http://10.0.0.19:6789', '2cc3620a96aceaadfa46e48395ac25265b9a134a8a9de93268adcf3f60ea745b'),
+    #              ('http://10.0.0.20:6789', '98786b14fc2ceaa30c00031023a5965161cad3a8dd5d941535e372b9632f029d'),
+    #              ('http://10.0.0.21:6789', '7f77176b29e777e7b855e84fc0688acd0a4093fe9d2cd44af59e751013d563d7'),
+    #              ('http://10.0.0.22:6789', '9956ba98090f318af998bae835d1ace3c9fdff2f2daae677d6670aaad9951df2'),
+    #              ('http://10.0.0.23:6789', '971bd2cf5c08841ef7ea08f2a863c4fdfe70bfacaa1ff87800c889a0ecab462a'),
+    #              ('http://10.0.0.24:6789', 'b9eb78b6ef82688833677909c0806f505a5397f155301990640b3926ddc24a83'),
+    #              ('http://10.0.0.25:6789', '66c3de2b9827c604b00140165f952dc8fe591724f8707891ed86bc4f1cc0dc00'),
+    #              ('http://10.0.0.26:6789', '7e980742f62e5d54d05bad38c3c56268ccf34ff4be6b859d40493c9ebace1ce1'),
+    #              ('http://10.0.0.27:6789', '89f5ccee535c7ad4258724513e5bcfcd37debaf05ccf39ae2442f9b70878a696'),
+    #              ('http://10.0.0.28:6789', '04a4bb0ebd5fcc90a0aad99ae943b4a160fa18d615925474b211070fc89d94e4'),
+    #              ('http://10.0.0.29:6789', '7252ca84514f9be82a5afe3afb310e71f001e1bbe8addead526bc397ff92b1f6'),
+    #              ('http://10.0.0.30:6789', 'a2b4a7d2a0d118bf87dc9e61ba54b7a9b9ae989715d0ab3f26ade4cb131ba038'),
+    #              ('http://10.0.0.31:6789', 'a4a026cb5c7d10c7ebef0069528e43358b63de2dd707715b566fd177429d66b2'),
+    #              ('http://10.0.0.32:6789', '7cb35bcebe5900bcdc7ea7fd47486128f4b22b8ecd1595bb47e8f8866b190d17'),
+    #              ('http://10.0.0.33:6789', '4fe61a44da26bf1a09771f6b26d22a40e03250dc1ef2141208611485f0ea79d1'),
+    #              ('http://10.1.1.51:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.52:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.53:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.54:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.55:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.56:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.57:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.60:6789', '3f2ed71cba9c15decf008819a3c4d93dd0dffbb7888acb22ea4a0ad4c7bf35e8'),
+    #              ('http://10.10.8.236:6789', '95ebd28147804fda08d6f6cbb690a3650e0415e0474ab9b08ab8d6e3650929cf'),
+    #              ('http://10.10.8.237:6789', 'eeeaf73dc70973bf40ee0d70c0ba1b564d47d91a85a15230a1fa49045e0717e7'),
+    #              ('http://10.10.8.238:6789', '5a38bea58575713a3b5ac9f70070efb73763d4e316ecbc3fc9096f4dd629f564'),
+    #              ('http://10.10.8.240:6789', '2c00916d6c5a977b7e69125ceafeace1a9d545dd9a5ccd4b2fb16742e70d9cc3'),
+    #              ]
+    # for _, staking_private_key in node_list:
+    #     staking_address = Account.privateKeyToAccount(staking_private_key, HRP).address
+    #     transfer(main_private_key, staking_address, 10 * 10 ** 18)
+    #     plan = [{'Epoch': 10, 'Amount': 5000 * 10 ** 18},
+    #             {'Epoch': 20, 'Amount': 5000 * 10 ** 18},
+    #             {'Epoch': 30, 'Amount': 5000 * 10 ** 18},
+    #             {'Epoch': 40, 'Amount': 5000 * 10 ** 18}]
+    #     create_restricting_plan(main_private_key, staking_address, plan)
     # print(platon.getBalance(staking_address))
     # print(ppos.getRestrictingInfo(staking_address))
-    # create_staking(staking_private_key, 1, node_url, node_id, bls_pubkey, 20000 * 10 ** 18, 1000)
+    # node_list = [('http://10.0.0.11:6789', '7fe5cc8f1c69b7b7e5b75224c7e8caa8db8b9c0d13d666ecd0703bca2409d690'),
+    #              ('http://10.0.0.12:6789', 'b61c15829a7684f67ee9cc960eb8c6140b7e3372517aa6180d4150a61e642eb7'),
+    #              ('http://10.0.0.13:6789', '7f677ee1f931a5eb7b0d8584d631153c1b8725ae1b6efdd9b5ab2e24b567e4d7'),
+    #              ('http://10.0.0.14:6789', '971bd2cf5c08841ef7ea08f2a863c4fdfe70bfacaa1ff87800c889a0ecab462a'),
+    #              ('http://10.0.0.15:6789', '9a331ee9886f2c5f01b12cc664d85c3ed7e4dcf6a1f21574690bb4949bb6e24b'),
+    #              ('http://10.0.0.16:6789', '3a3fbabfddf9934c6ca1395b486db656be9e3a7fc66f7340a6332209432c3575'),
+    #              ('http://10.0.0.17:6789', '2c892dcaa800bce2ea75da443a87c31a57c6312910fa99fbc31d6d6a70302900'),
+    #              ('http://10.0.0.18:6789', 'dce1a70c69541d9c28c3e569fe308f55e9538a697a6547191d8530eba60acf28'),
+    #              ('http://10.0.0.19:6789', '2cc3620a96aceaadfa46e48395ac25265b9a134a8a9de93268adcf3f60ea745b'),
+    #              ('http://10.0.0.20:6789', '98786b14fc2ceaa30c00031023a5965161cad3a8dd5d941535e372b9632f029d'),
+    #              ('http://10.0.0.21:6789', '7f77176b29e777e7b855e84fc0688acd0a4093fe9d2cd44af59e751013d563d7'),
+    #              ('http://10.0.0.22:6789', '9956ba98090f318af998bae835d1ace3c9fdff2f2daae677d6670aaad9951df2'),
+    #              ('http://10.0.0.23:6789', '971bd2cf5c08841ef7ea08f2a863c4fdfe70bfacaa1ff87800c889a0ecab462a'),
+    #              ('http://10.0.0.24:6789', 'b9eb78b6ef82688833677909c0806f505a5397f155301990640b3926ddc24a83'),
+    #              ('http://10.0.0.25:6789', '66c3de2b9827c604b00140165f952dc8fe591724f8707891ed86bc4f1cc0dc00'),
+    #              ('http://10.0.0.26:6789', '7e980742f62e5d54d05bad38c3c56268ccf34ff4be6b859d40493c9ebace1ce1'),
+    #              ('http://10.0.0.27:6789', '89f5ccee535c7ad4258724513e5bcfcd37debaf05ccf39ae2442f9b70878a696'),
+    #              ('http://10.0.0.28:6789', '04a4bb0ebd5fcc90a0aad99ae943b4a160fa18d615925474b211070fc89d94e4'),
+    #              ('http://10.0.0.29:6789', '7252ca84514f9be82a5afe3afb310e71f001e1bbe8addead526bc397ff92b1f6'),
+    #              ('http://10.0.0.30:6789', 'a2b4a7d2a0d118bf87dc9e61ba54b7a9b9ae989715d0ab3f26ade4cb131ba038'),
+    #              ('http://10.0.0.31:6789', 'a4a026cb5c7d10c7ebef0069528e43358b63de2dd707715b566fd177429d66b2'),
+    #              ('http://10.0.0.32:6789', '7cb35bcebe5900bcdc7ea7fd47486128f4b22b8ecd1595bb47e8f8866b190d17'),
+    #              ('http://10.0.0.33:6789', '4fe61a44da26bf1a09771f6b26d22a40e03250dc1ef2141208611485f0ea79d1'),
+    #              ('http://10.1.1.51:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.52:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.53:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.54:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.55:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.56:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.57:6789', '64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e'),
+    #              ('http://10.1.1.60:6789', '3f2ed71cba9c15decf008819a3c4d93dd0dffbb7888acb22ea4a0ad4c7bf35e8'),
+    #              ('http://10.10.8.236:6789', '95ebd28147804fda08d6f6cbb690a3650e0415e0474ab9b08ab8d6e3650929cf'),
+    #              ('http://10.10.8.237:6789', 'eeeaf73dc70973bf40ee0d70c0ba1b564d47d91a85a15230a1fa49045e0717e7'),
+    #              ('http://10.10.8.238:6789', '5a38bea58575713a3b5ac9f70070efb73763d4e316ecbc3fc9096f4dd629f564'),
+    #              ('http://10.10.8.240:6789', '2c00916d6c5a977b7e69125ceafeace1a9d545dd9a5ccd4b2fb16742e70d9cc3'),
+    #              ]
+    # for node_url, staking_private_key in node_list:
+    #     create_staking(staking_private_key, 1, node_url, 20000 * 10 ** 18, 1000)
     # # 增持质押
     # transfer(main_private_key, staking_address, 10 * 10 ** 18)
     # increase_staking(staking_private_key, node_id, 10 * 10 ** 18)
@@ -387,10 +460,10 @@ if __name__ == '__main__':
     # # 查询提案
     # get_proposal_list()
     # # 版本声明
-    node_list = [('http://10.0.0.20:6789', '98786b14fc2ceaa30c00031023a5965161cad3a8dd5d941535e372b9632f029d'),
-                 ]
-    for node_url, private_key in node_list:
-        print(declear_version(private_key, node_url))
+    # node_list = [('http://10.0.0.20:6789', '98786b14fc2ceaa30c00031023a5965161cad3a8dd5d941535e372b9632f029d'),
+    #              ]
+    # for node_url, private_key in node_list:
+    #     print(declear_version(private_key, node_url))
     # # **** 调试信息 ****
     # print(PLATON.blockNumber)
     # print(PLATON.getBalance('atx1h0ssa942rrwy7yt8m4tjcsvpkr5z5qhmwx55av'))
