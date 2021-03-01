@@ -7,7 +7,7 @@ Platon test tool, used by the test team.
 
 
 ## Usage
-1. txGenerator：批量交易生成器，无需编码，批量发送交易，使用方法见：[README.md](./txGenerator/README.md)
+1. txGenerator：批量交易生成器，无需编码，批量发送交易，使用方法见：[README.md](txGenerator/README.md)
 
 2. txTool：简化发送PlatON交易方式，支持PlatON所有交易类型，需要简单编码。
 

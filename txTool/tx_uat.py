@@ -1,6 +1,3 @@
-from txTool.core.core import *
-
-
 main_private_key = 'defc69adf94e2b01fcb6e47d50f2880ac864a98447f8b2c3640ce5d6d2600190'
 
 # # **** 交易模块 ****
@@ -25,20 +22,20 @@ main_private_key = 'defc69adf94e2b01fcb6e47d50f2880ac864a98447f8b2c3640ce5d6d260
 # plan = [{'Epoch': 4, 'Amount': 4000 * 10 ** 18}, {'Epoch': 8, 'Amount': 4000 * 10 ** 18}]
 # create_restricting_plan(main_private_key, "atx1wz5as9rhsfdfl3n2fymhhfdvfg75c6ndq83xqu", plan)
 #
-# print(f'## Balance: {PLATON.getBalance(address)}')
-# print(f'## Restricting: {PPOS.getRestrictingInfo(address)}')
+# print(f'## Balance: {self.platon.getBalance(address)}')
+# print(f'## Restricting: {self.ppos.getRestrictingInfo(address)}')
 
 # plan = [{'Epoch': 1, 'Amount': 80 * 10 ** 18}, {'Epoch': 2, 'Amount': 80 * 10 ** 18}]
 # create_restricting_plan(private_key, address, plan)
 #
-# print(f'## Balance: {PLATON.getBalance(address)}')
-# print(f'## Restricting: {PPOS.getRestrictingInfo(address)}')
+# print(f'## Balance: {self.platon.getBalance(address)}')
+# print(f'## Restricting: {self.ppos.getRestrictingInfo(address)}')
 #
 # plan = [{'Epoch': 1, 'Amount': 80 * 10 ** 18}, {'Epoch': 2, 'Amount': 80 * 10 ** 18}]
 # create_restricting_plan(private_key, address, plan)
 #
-# print(f'## Balance: {PLATON.getBalance(address)}')
-# print(f'## Restricting: {PPOS.getRestrictingInfo(address)}')
+# print(f'## Balance: {self.platon.getBalance(address)}')
+# print(f'## Restricting: {self.ppos.getRestrictingInfo(address)}')
 # # **** 经济模型模块 ****
 # node_id = 'd80caefe38ec4bfcb8bf99793f63da63662d0acf34c8adeb96ab89a3c6b96b4cf862d405febfa708d28f64895e755e1f60c2821124915f369746a78834a8b906'
 # bls_pubkey = '61f437e6bdc2d61a45bb8a4df0dbdd5351075e89c575dc35647590f79f8d8d49e159d7a30a6c19166b249d26254d230b0cda80ff166484c47bc32c6e2a13fc5b9bf891d79843d3462ee5057ad34852c48cf73a2adbecab970b2a3dff0772e519'
@@ -83,7 +80,7 @@ main_private_key = 'defc69adf94e2b01fcb6e47d50f2880ac864a98447f8b2c3640ce5d6d260
 #              ('http://10.10.8.240:6789', '2c00916d6c5a977b7e69125ceafeace1a9d545dd9a5ccd4b2fb16742e70d9cc3'),
 #              ]
 # for _, staking_private_key in node_list:
-#     staking_address = Account.privateKeyToAccount(staking_private_key, HRP).address
+#     staking_address = Account.privateKeyToAccount(staking_private_key, self.hrp).address
 #     transfer(main_private_key, staking_address, 10 * 10 ** 18)
 #     plan = [{'Epoch': 10, 'Amount': 5000 * 10 ** 18},
 #             {'Epoch': 20, 'Amount': 5000 * 10 ** 18},
@@ -134,7 +131,7 @@ main_private_key = 'defc69adf94e2b01fcb6e47d50f2880ac864a98447f8b2c3640ce5d6d260
 # transfer(main_private_key, staking_address, 10 * 10 ** 18)
 # increase_staking(staking_private_key, node_id, 10 * 10 ** 18)
 # # 修改质押信息
-# benifit_address = Account.privateKeyToAccount(staking_private_key, HRP).address
+# benifit_address = Account.privateKeyToAccount(staking_private_key, self.hrp).address
 # edit_staking(staking_private_key, node_id, external_id='shinnng')
 # # 创建委托
 # transfer(main_private_key, delegation_address, 11 * 10 ** 18)
@@ -241,20 +238,20 @@ main_private_key = 'defc69adf94e2b01fcb6e47d50f2880ac864a98447f8b2c3640ce5d6d260
 # for node_url, private_key in node_list:
 #     print(declear_version(private_key, node_url))
 # # **** 调试信息 ****
-# print(PLATON.blockNumber)
-# print(PLATON.getBalance('atx1h0ssa942rrwy7yt8m4tjcsvpkr5z5qhmwx55av'))
+# print(self.platon.blockNumber)
+# print(self.platon.getBalance('atx1h0ssa942rrwy7yt8m4tjcsvpkr5z5qhmwx55av'))
 # print(platon.gasPrice)
-# print(PPOS.getRestrictingInfo('atx1h0ssa942rrwy7yt8m4tjcsvpkr5z5qhmwx55av'))
+# print(self.ppos.getRestrictingInfo('atx1h0ssa942rrwy7yt8m4tjcsvpkr5z5qhmwx55av'))
 # print(platon.getTransactionCount('atx1zkrxx6rf358jcvr7nruhyvr9hxpwv9unj58er9'))
 # print(platon.waitForTransactionReceipt('0xda81aab7e6d9f5188081fbd281fd0eaaebef1f1be03ff2c98fd1f76c36c16ec5'))
 # print(platon.getCode('atx1rdlcxzxk88e7k7mm0w93ald07g52l6pw97gzzz'))
-# print(PPOS.getValidatorList())
-# print(PPOS.getVerifierList())
-# print(PPOS.getCandidateList())
+# print(self.ppos.getValidatorList())
+# print(self.ppos.getVerifierList())
+# print(self.ppos.getCandidateList())
 # print(ppos.getCandidateInfo('bc9dabae54a13202ec765c1537c57b9f6659161596eae7c0344a606e9396c63c96a2a76aadc320100e9a56c5acdb8faddfb61733bddeff7b9f261ac54a46d775'))
-# print(PIP.listProposal())
+# print(self.pip.listProposal())
 # print(pip.getProposal('0x9552914c57933ad207d2c028cf71445de40b99f3b088155f31f07bdc4ddab2e2')['Ret']['ActiveBlock'])
-# print(pip.getAccuVerifiersCount('0x7991b9bb943c0fc67df975975e34602ca501610b31ea842079137c59be5e6b0d', PLATON.getBlock(PLATON.blockNumber)['hash'].hex()))
-# print(PIP.getTallyResult('0x15e460705e953944b5523b4b26413d94d9ef9ef88e50e1911bf4e4f0ba4897a7'))
-# print(PIP.getTallyResult('0x76c6f1d3af082174973da06c670b25095dcc6d5596488d5300fded83dd2b978a'))
-# print(PIP.getActiveVersion())
+# print(pip.getAccuVerifiersCount('0x7991b9bb943c0fc67df975975e34602ca501610b31ea842079137c59be5e6b0d', self.platon.getBlock(self.platon.blockNumber)['hash'].hex()))
+# print(self.pip.getTallyResult('0x15e460705e953944b5523b4b26413d94d9ef9ef88e50e1911bf4e4f0ba4897a7'))
+# print(self.pip.getTallyResult('0x76c6f1d3af082174973da06c670b25095dcc6d5596488d5300fded83dd2b978a'))
+# print(self.pip.getActiveVersion())
