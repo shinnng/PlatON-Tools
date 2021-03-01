@@ -1,3 +1,4 @@
+# 节点信息，在节点质押/解质押时使用
 - w3_url: 'http://192.168.9.222:6788'
   node_id: 'aef93e9cb7c4488de216f8ed12cad9ddecfd2150ae4cc6a5045ba286ce26276910cf8c6e4df633c2964160cc3bca8015cff2c55a41294e979767d5b0effb48b0'
   staking_type: 0

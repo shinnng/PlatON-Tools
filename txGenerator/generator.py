@@ -2,14 +2,11 @@ from random import randint, uniform, sample
 
 import click
 from client_sdk_python import Web3, HTTPProvider, eth as Eth, ppos as Ppos, admin as Admin, debug as Debug
-# from platon import Web3, HTTPProvider, eth as Eth, ppos as Ppos, admin as Admin, debug as Debug
 from hexbytes import HexBytes
 from ruamel import yaml
 
 chain_id = 201030
-# w3_url = 'http://149.129.180.78:6789'
 w3_url = 'http://10.1.1.51:6789'
-# w3_url = 'http://154.85.34.8:6789'
 main_account_prikey = 'f51ca759562e1daf9e5302d121f933a8152915d34fcbc27e542baf256b5e4b74'
 cdf_account = 'atx1ur2hg0u9wt5qenmkcxlp7ysvaw6yupt4xerq62'
 
