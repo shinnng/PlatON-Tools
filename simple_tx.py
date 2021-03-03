@@ -4,6 +4,7 @@ from client_sdk_python import eth, ppos, pip
 from client_sdk_python.middleware import geth_poa_middleware
 from hexbytes import HexBytes
 from client_sdk_python.packages.platon_account.account import Account
+from loguru import logger
 
 
 # 通用信息
@@ -22,25 +23,24 @@ class SimpleTx:
 
     # 创建账户
     def create_account(self):
-        print("==== create account =====")
         account = self.platon.account.create()
         address = account.address
         prikey = account.privateKey.hex()[2:]
-        print(f"create account = {address}, {prikey}")
+        logger.info(f"create account = {address}, {prikey}")
         return address, prikey
 
     # 创建HD钱包
     # todo: coding
     # def create_hd_account():
-    #     print("==== create hd account =====")
+    #     logger.info("==== create hd account =====")
     #     # account = self.web3.platon.account.(net_type=self.hrp)
     #     master_key, mnemonic = HDPrivateKey.master_key_from_entropy()
-    #     print(master_key)
-    #     print(mnemonic)
+    #     logger.info(master_key)
+    #     logger.info(mnemonic)
     #     root_keys = HDKey.from_path(master_key, "m/44'/206'/0'")
-    #     print(root_keys)
+    #     logger.info(root_keys)
     #     acct_priv_key = root_keys[-1]
-    #     print(acct_priv_key)
+    #     logger.info(acct_priv_key)
     # for j in range(30):
     #     keys = HDKey.from_path(acct_priv_key, '{change}/{index}'.format(change=0, index=j))
     #     private_key = keys[-1]
@@ -51,7 +51,6 @@ class SimpleTx:
 
     # 转账交易
     def transfer(self, from_privatekey, to_address, amount):
-        print("==== transfer =====")
         from_address = Account.privateKeyToAccount(from_privatekey, self.hrp).address
         nonce = self.platon.getTransactionCount(from_address)
         transaction_dict = {
@@ -69,20 +68,18 @@ class SimpleTx:
         data = signedTransactionDict.rawTransaction
         result = HexBytes(self.platon.sendRawTransaction(data)).hex()
         result = self.platon.waitForTransactionReceipt(result)
-        print(f"transfer staking result = {result}")
+        logger.info(f'transfer result = {result}')
         return result
 
     # 锁仓交易
     def restricting(self, from_private_key, to_address, restricting_plan):
-        print("==== create restricting plan =====")
         # ppos.need_analyze = False
         result = self.ppos.createRestrictingPlan(to_address, restricting_plan, from_private_key)
-        print(f"create restricting plan result = {result}")
+        logger.info(f"restricting result = {result['code']}")
         return result
 
     # 创建质押
     def staking(self, staking_private_key, balance_type, node_url, amount=10 ** 18 * 2000000, reward_per=1000):
-        print("==== create staking =====")
         w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id)
         version_info = w3.admin.getProgramVersion()
         version = version_info['Version']
@@ -96,144 +93,149 @@ class SimpleTx:
                                          'details',
                                          amount, version, version_sign, bls_pubkey, bls_proof, staking_private_key,
                                          reward_per)
-        print(f"create staking result = {result}")
+        logger.info(f"staking result = {result['code']}, {result}")
         return result
 
     # 增持质押
     def increase_staking(self, staking_private_key, node_id, balance_type, amount=10 ** 18 * 100):
-        print("==== increase staking =====")
         result = self.ppos.increaseStaking(balance_type, node_id, amount, staking_private_key)
-        print(f'incress staking result = {result}')
+        logger.info(f"incress staking result = {result['code']}, {result}")
         return result
 
     # 修改质押信息
     def edit_staking(self, staking_private_key, node_id, benifit_address=None, external_id=None, node_name=None,
                      website=None,
                      details=None, reward_per=None):
-        print("==== edit staking =====")
         result = self.ppos.editCandidate(staking_private_key, node_id, benifit_address, external_id, node_name, website,
                                          details,
                                          reward_per)
-        print(f'edit staking result = {result}')
+        logger.info(f"edit staking result = {result['code']}, {result}")
         return result
 
     # 解除质押
     def withdrew_staking(self, staking_private_key, node_id):
-        print("==== withdrew staking =====")
         result = self.ppos.withdrewStaking(node_id, staking_private_key)
-        print(f'withdrew staking result = {result}')
+        logger.info(f"withdrew staking result = {result['code']}, {result}")
         return result
 
     # 查询质押信息
-    def get_staking_info(self, node_id):
-        print("==== get staking info =====")
-        result = self.ppos.getValidatorList()
-        print(f'get validator list = {result}')
-        result = self.ppos.getVerifierList()
-        print(f'get verifier list = {result}')
-        result = self.ppos.getCandidateList()
-        print(f'get candidate list = {result}')
+    def get_candidate_info(self, node_id):
         result = self.ppos.getCandidateInfo(node_id)
-        print(f'get candidate info = {result}')
-
-    # 获取可委托节点列表
-    def get_delegable_nodes(self, cdf_account):
-        candidate_list = self.ppos.getCandidateList()['Ret']
-        delegable_nodes = [i for i in candidate_list if i['StakingAddress'] != cdf_account]
-        return delegable_nodes
+        logger.info(f"get candidate info = {result['Code']}, {result}")
 
     # 创建委托
-    def delegation(self, delegation_private_key, node_id, balance_type, amount=10 * 10 ** 18):
-        print("==== delegation =====")
+    def delegate(self, delegation_private_key, node_id, balance_type, amount=10 * 10 ** 18):
         result = self.ppos.delegate(balance_type, node_id, amount, delegation_private_key)
-        print(f'delegation result = {result}')
+        logger.info(f"delegate result = {result['code']}, {result}")
         return result
 
     # 解除委托
-    def undelegation(self, delegation_private_key, node_id, amount=1 * 10 ** 18):
-        print("==== undelegation =====")
-        delegation_address = Account.privateKeyToAccount(delegation_private_key).address
-        result = self.ppos.getRelatedListByDelAddr(delegation_address)
-        print(f'get related list = {result}')
-        block_number = result.get('Ret')[0].get('StakingBlockNum')
-        assert block_number != ''
+    def undelegate(self, delegation_private_key, node_id, block_number, amount=1 * 10 ** 18):
         result = self.ppos.withdrewDelegate(block_number, node_id, amount, delegation_private_key)
-        print(f'undelegation result = {result}')
+        logger.info(f"undelegate result = {result['code']}, {result}")
+        return result
+
+    # 获取可委托节点列表
+    def get_delegable_nodes(self, cdf_account):
+        result = self.ppos.getCandidateList()
+        delegable_nodes = [i for i in result['Ret'] if i['StakingAddress'] != cdf_account]
+        result['Ret'] = delegable_nodes
+        logger.info(f"get delegable nodes = {result['Code']}, {result}")
         return result
 
     # 查询委托信息
-    def get_delegation_list(self, delegation_address):
-        print("==== get delegation list =====")
+    def get_delegate_list(self, delegation_address):
         result = self.ppos.getRelatedListByDelAddr(delegation_address)
-        print(f'get delegation list = {result}')
+        logger.info(f"get delegate list = {result['Code']}, {result}")
+        return result
+
+    # 获取账户对某个节点的委托信息
+    def get_delegate_list_for_node(self, address, node_id):
+        delegated_list = []
+        result = self.get_delegate_list(address)
+        if result['Code'] == 0:
+            for delegated_info in result['Ret']:
+                if delegated_info['NodeId'] is node_id:
+                    delegated_list.append(delegated_info)
+            if delegated_list:
+                result['Ret'] = delegated_list
+            else:
+                result = {'Code': 301203, 'Ret': 'Retreiving delegation related mapping failed:RelatedList info is not found'}
+        logger.info(f"get delegated list for node = {result['Code']}, {result}")
+        return result
+
+    # 获取账户对某个节点的委托详情
+    def get_delegate_info(self, address, node_id, block_number):
+        result = self.ppos.getDelegateInfo(block_number, address, node_id)
+        logger.info(f"get delegated info = {result['Code']}, {result}")
         return result
 
     # 领取委托分红
     def withdraw_delegate_reward(self, delegate_private_key):
-        print("==== withdraw delegate reward =====")
         result = self.ppos.withdrawDelegateReward(delegate_private_key)
-        print(f'withdraw delegate result = {result}')
+        logger.info(f"withdraw delegate result = {result['code']}, {result}")
         return result
 
     # 创建升级提案
     def version_proposal(self, node_private_key, node_id, upgrade_version, voting_rounds):
-        print("==== create version proposal =====")
         result = self.pip.submitVersion(node_id, str(time.time()), upgrade_version, voting_rounds, node_private_key,
                                         self.tx_cfg)
-        print(f'create version proposal result = {result}')
+        logger.info(f"version proposal result = {result['code']}, {result}")
         return result
 
     # 创建文本提案
     def text_proposal(self, node_private_key, node_id):
-        print("==== create test proposal =====")
         result = self.pip.submitText(node_id, str(time.time()), node_private_key, self.tx_cfg)
-        print(f'create version proposal result = {result}')
+        logger.info(f"text proposal result = {result['code']}, {result}")
         return result
 
     # 查询提案列表
     def get_proposal_list(self):
-        print("==== get proposal list =====")
-        pip_list = self.pip.listProposal()
-        print(f"proposal list = {pip_list}")
-        return pip_list
+        result = self.pip.listProposal()
+        logger.info(f"proposal list = {result['Code']}, {result}")
+        return result
 
     # 提案投票
     def vote(self, node_private_key, node_url, proposal_id, vote_type):
-        print("==== vote =====")
         w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id)
         program_version = w3.admin.getProgramVersion()['Version']
         version_sign = w3.admin.getProgramVersion()['Sign']
         node_id = w3.admin.nodeInfo['id']
         # proposal_id = w3.pip.listProposal().get('Ret')[0].get('ProposalID')
         # assert proposal_id != ''
-        print(f'vote node: {node_url}, {node_id}')
+        logger.info(f'vote node: {node_url}, {node_id}')
         result = self.pip.vote(node_id, proposal_id, vote_type, program_version, version_sign, node_private_key)
-        print(f'version proposal vote result = {result}, {proposal_id}')
+        logger.info(f"vote result = {result['code']}, {result}")
         return result
 
     # 版本声明
     def declare_version(self, node_private_key, node_url):
-        print("==== declare version =====")
         w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id)
         node_id = w3.admin.nodeInfo['id']
         program_version = w3.admin.getProgramVersion()['Version']
         version_sign = w3.admin.getProgramVersion()['Sign']
         result = self.pip.declareVersion(node_id, program_version, version_sign, node_private_key)
-        print(f'declare version result = {result}')
+        logger.info(f"declare version result = {result['code']}, {result}")
         return result
 
     # 获取当前版本号
     def get_version(self):
-        print("==== get version =====")
         result = self.pip.getActiveVersion()
-        print(f'chain version = {result}')
+        logger.info(f'chain version = {result}')
 
     # 等待块高
     def wait_block(self, block_number):
-        print("==== wait block ====")
         current_block = self.platon.blockNumber
         end_block = current_block + block_number
         while current_block < end_block:
-            print(f'wait block: {current_block} -> {end_block}')
+            logger.info(f'wait block: {current_block} -> {end_block}')
             time.sleep(5)
             current_block = self.platon.blockNumber
+
+
+
+if __name__ == '__main__':
+    tx = SimpleTx('http://192.168.120.121:6789', 201018)
+    address, private_key = 'lat1x84ksjuv2wgc7z0vksd2la7jyu4e469y5t8ves', '91e2830913698ebbd7c85c9dce4da6a96ca2fcd5b9bb9314637f0a99e830012c'
+    node_id = '7c31d0e2f716324c9051c322be59dd86194f28ad7b71e3bc3837062708b7207e82bed0d6e24691b9107549787b541e3c917ec7503e0ba3addd1340075188bad6'
+    tx.get_delegate_list(address)
