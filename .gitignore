@@ -14,4 +14,4 @@
 **/*.egg-info
 **/*.code-workspace
 **/*.bak
-**/*.idea
+**/*idea*

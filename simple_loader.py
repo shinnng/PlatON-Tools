@@ -1,88 +1,98 @@
 import random
 import time
-
+import logging
 from client_sdk_python import Account
-from loguru import logger
 from simple_tx import SimpleTx
-from threading import Thread
+import threading
 
 
-# 基础信息生成
-def create_accounts(num: int):
-    logger.info(f'======== create accounts ========')
-    accounts = []
-    for _ in range(num):
-        address, private_key = tx.create_account()
-        accounts.append((address, private_key))
-    return accounts
+class User:
 
+    def __init__(self, tx: SimpleTx, total_account: int, log_file: str):
+        self.tx = tx
+        self.accounts = self.create_accounts(total_account)
+        self.delegable_nodes = delegable_nodes
+        # self.delegable_nodes = tx.get_delegable_nodes(cdf_address)['Ret']
+        # 记录线程日志
+        self.logger = logging.Logger(log_file)
+        fh = logging.FileHandler(filename=log_file, mode='a', encoding='utf-8')
+        self.logger.addHandler(fh)
 
-def gen_nonce_dict(keys: list):
-    logger.info(f'======== gen nonce dict ========')
-    nonces = {}
-    for key in keys:
-        nonces[key] = 0  # todo: get nonce
-    return nonces
+    # 记录线程日志
+    def logger(self):
+        pass
 
+    # 创建初始账户
+    def create_accounts(self, total):
+        accounts = []
+        for _ in range(total):
+            address, private_key = self.tx.create_account()
+            amount = 2000 * 10 ** 18
+            plan = [{'Epoch': 5000, 'Amount': amount}]
+            self.tx.transfer(main_private_key, address, amount)
+            self.tx.restricting(main_private_key, address, plan)
+            accounts.append((address, private_key, 0))
+        return accounts
 
-# 压测请求生成
-def delegate(private_key, node_id):
-    logger.info(f'======== delegate ========')
-    balance_type = random.randint(0, 1)
-    amount = int(random.uniform(10, 100) * 10 ** 18)
-    tx.delegate(private_key, node_id, balance_type, amount)
+    # 灵活控制启动时的参数
+    def start(self, duration, ratio_setting):
+        current_time = time.time()
+        end_time = current_time + duration
+        while current_time < end_time:
+            self.logger.info(f'请求前：{time.time()}')
+            try:
+                self.random_request(ratio_setting)
+            except Exception as e:  # todo: recover_nonce
+                # recover_nonce(account)
+                raise e
+            current_time = time.time()
+            self.logger.info(f'请求后：{current_time}')
 
+    # 选择压测方法
+    def random_request(self, ratio_setting):
+        r = random.randint(1, sum(ratio_setting))
+        if r <= ratio_setting[0]:
+            # 委托
+            self._delegate()
+        elif ratio_setting[0] < r <= sum(ratio_setting[:2]):
+            # 减持/撤销委托
+            self._undelegate()
+        else:
+            # 领取委托奖励
+            self._withdraw_reward()
 
-def undelegate(private_key, node_id):
-    logger.info(f'======== undelegate ========')
-    address = Account.privateKeyToAccount(private_key, 'lat').address
-    delegates = tx.get_delegate_list_for_node(address, node_id)
-    if delegates['Code'] != 0:
-        logger.info(f"The choice node is not delegated!")
-        return
-    rd = random.choice(delegates['Ret'])
-    delegate = tx.get_delegate_info(address, node_id, rd['StakingBlockNum'])['Ret']
-    block_number = delegate['StakingBlockNum']
-    max_amount = delegate['Released'] + delegate['ReleasedHes'] + delegate['RestrictingPlan'] + delegate['RestrictingPlanHes']
-    amount = random.randint(10 * 10 ** 18, max_amount)
-    tx.undelegate(private_key, node_id, block_number, amount)
+    def _delegate(self):
+        account = random.choice(self.accounts)
+        node = random.choice(self.delegable_nodes)
+        private_key = account[1]
+        node_id = node['NodeId']
+        balance_type = random.randint(0, 1)
+        amount = int(random.uniform(10, 100) * 10 ** 18)
+        self.tx.delegate(private_key, node_id, balance_type, amount)
 
+    def _undelegate(self):
+        account = random.choice(self.accounts)
+        node = random.choice(self.delegable_nodes)
+        address, private_key = account[0], account[1]
+        node_id = node['NodeId']
+        delegates_info = self.tx.get_delegate_list_for_node(address, node_id)
+        if delegates_info['Code'] != 0:
+            self.logger.info(f"The choice node is not delegated!")
+            return
+        delegate_info = random.choice(delegates_info['Ret'])
+        delegate = tx.get_delegate_info(address, node_id, delegate_info['StakingBlockNum'])['Ret']
+        block_number = delegate['StakingBlockNum']
+        max_amount = delegate['Released'] + delegate['ReleasedHes'] + delegate['RestrictingPlan'] + delegate['RestrictingPlanHes']
+        amount = random.randint(10 * 10 ** 18, max_amount)
+        self.tx.undelegate(private_key, node_id, block_number, amount)
 
-def withdra_reward(private_key):
-    logger.info(f'======== withdra reward ========')
-    tx.withdraw_delegate_reward(private_key)
+    def _withdraw_reward(self):
+        account = random.choice(self.accounts)
+        private_key = account[1]
+        self.tx.withdraw_delegate_reward(private_key)
 
-
-# 压测过程方法
-def gen_request(account, nodes, ratio_setting):
-    # 参数准备
-    address, private_key = account[0], account[1]
-    node = random.choice(nodes)
-    node_id = node['NodeId']
-    # 随机请求
-    r = random.randint(1, sum(ratio_setting))
-    if r <= ratio_setting[0]:
-        delegate(private_key, node_id)  # 委托
-    elif ratio_setting[0] < r <= sum(ratio_setting[:2]):
-        undelegate(private_key, node_id)  # 减持/撤销委托
-    else:
-        withdra_reward(private_key)  # 领取委托奖励
-
-
-def recover_nonce(account):
-    pass
-
-
-def loader(account, nodes, duration, ratio_setting):
-    ct = time.time()
-    end = ct + duration
-    while ct < end:
-        try:
-            gen_request(account, nodes, ratio_setting)
-        except Exception as e:  # todo: recover_nonce
-            # recover_nonce(account)
-            raise e
-        ct = time.time()
+    def recover_nonce(account):
+        pass
 
 
 if __name__ == '__main__':
@@ -93,35 +103,35 @@ if __name__ == '__main__':
     # 配置项
     rpc = 'http://192.168.120.121:6789'
     chain_id = 201018
-    load_duration = 60  # 压测时长/s
-    load_threads = 10  # 线程数,也是压测账户数
-    load_ratio = (60, 30, 10)  # 配置各请求的发送几率
-    init_amount = 1000  # 账户中的初始金额/later
+    load_threads = 20       # 压测线程数
+    load_accounts = 20     # 压测账户数，不低于线程数
+    load_duration = 30     # 压测时长/s
+    load_ratio = (60, 30, 10)  # 各请求的发送比率
     main_address, main_private_key = 'lat1rzw6lukpltqn9rk5k59apjrf5vmt2ncv8uvfn7', 'f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa'
     cdf_address, cdf_private_key = 'lat1kvurep20767ahvrkraglgd9t34w0w2g059pmlx', 'f767d379a652ab5cc8c85cd7fef1b00bffcec90697dcfd6c64991dd284cac4e9'
-    tx = SimpleTx(rpc, chain_id)
+    # 日志配置
+    logging.basicConfig(filename='main.log',
+                        format='%(asctime)s - %(name)s - %(levelname)s -%(module)s:  %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S %p',
+                        level=logging.INFO)
     # 基础信息生成
-    accounts = create_accounts(load_threads)
-    for account in accounts:
-        amount = init_amount * 10 ** 18
-        tx.transfer(main_private_key, account[0], amount)
-        plan = [{'Epoch': int(load_duration / 20) + 1, 'Amount': amount}]
-        tx.restricting(main_private_key, account[0], plan)
-    nodes = tx.get_delegable_nodes(cdf_address)['Ret']
-    logger.info(f'nodes = {nodes}')
-    assert nodes, 'Delegable nodes is empty!'
+    tx = SimpleTx(rpc, chain_id)
+    delegable_nodes = tx.get_delegable_nodes(cdf_address)['Ret']
+    logging.info(f'Delegable nodes = {delegable_nodes}')
+    assert delegable_nodes, 'Delegable nodes is empty!'
     # 创建多线程
     threads = []
+    accounts_per_thread = int(load_accounts / load_threads)
     for i in range(load_threads):
-        account = accounts[i]
-        t = Thread(target=loader, name=f't{i}', args=(account, nodes, load_duration, load_ratio))
+        user = User(tx, accounts_per_thread, f'T{i}')
+        t = threading.Thread(target=user.start, name=f'T{i}', args=(load_duration, load_ratio))
         threads.append(t)
     # 启动多线程
     for thread in threads:
         thread.setDaemon(True)
-        logger.info(f'Thread [{thread.name}] start!')
         thread.start()
-    # 等待子线程运行完成
+        logging.info(f'Thread [{thread.name}] start!')
+    # 等待线程运行完成
     for thread in threads:
         thread.join()
-    print(f'All thread over!')
+    logging.info(f'All thread over!')
