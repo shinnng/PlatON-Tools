@@ -17,6 +17,8 @@ class User:
         log_file = currentThread().getName()
         self.logger = logging.Logger(log_file)
         fh = logging.FileHandler(filename=log_file, mode='a', encoding='utf-8')
+        fmt = logging.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
+        fh.setFormatter(fmt)
         self.logger.addHandler(fh)
         # 初始化对象
         self.web3 = web3

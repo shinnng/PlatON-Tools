@@ -54,7 +54,7 @@ def get_tps(actions):
 if __name__ == "__main__":
     # 主线程日志配置
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(module)s: %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S %p',
+                        datefmt='%Y-%m-%d %H:%M:%S',
                         level=logging.INFO)
     # 生成线程池
     logging.info('######## Simple load tool ########')
