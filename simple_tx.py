@@ -12,6 +12,7 @@ class SimpleTx:
     tx_cfg = {'gasPrice': 3000000000000000}
 
     def __init__(self, rpc, chain_id):
+        print("############################################")
         self.rpc = rpc
         self.chain_id = chain_id
         self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id)
@@ -48,6 +49,10 @@ class SimpleTx:
     #     keystores[public_address] = json.dumps(private_key._key.to_keyfile_json(password))
     #     privateKeys[public_address] = private_key._key.get_private_key()
     #     addresses_df.loc[(prikey_manager, account_use, wallet_type, i, j), :] = [public_address]
+
+    def get_block(self):
+        pass
+
 
     # 转账交易
     def transfer(self, from_privatekey, to_address, amount):
