@@ -1,0 +1,5 @@
+loguru==0.5.1
+click==6.6
+hexbytes==0.1.0
+client_sdk_python==0.15.1.6
+ruamel.base==1.0.0
