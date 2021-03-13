@@ -8,7 +8,7 @@ from utils import funcs_list
 
 
 def load_threader():
-    action = Action(web3, load_accounts)
+    action = Action(load_accounts)
     actions.append(action)
     current_time = time.time()
     end_time = current_time + load_duration
@@ -36,7 +36,10 @@ def load_threader():
                     action.platon.waitForTransactionReceipt(res_hash, 20)
                 except Exception as e:
                     action.logger.info('wait transaction receipt time out!')
-                    account.nonce = action.platon.getTransactionCount(account.address)
+                    nonce = action.platon.getTransactionCount(account.address)
+                    if nonce:
+                        account.nonce = nonce
+                    action.logger.info(f'get transaction count: {account.nonce}')
         current_time = time.time()
 
 
@@ -64,6 +67,7 @@ if __name__ == "__main__":
         threads.append(t)
     # 启动压测线程
     for thread in threads:
+        time.sleep(1)
         thread.start()
         logging.info(f'thread [{thread.name}] Started!')
     logging.info(f'loader is running at {web3.eth.blockNumber}, please waiting...')

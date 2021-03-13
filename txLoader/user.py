@@ -1,18 +1,17 @@
 import logging
-import time
-from threading import currentThread, Lock
-from client_sdk_python import Web3
+from threading import currentThread
+from client_sdk_python import Web3, WebsocketProvider
 from client_sdk_python.eth import PlatON
 from client_sdk_python.ppos import Ppos
 from hexbytes import HexBytes
 from account import Account
-from setting import main_private_key, load_amount, main_nonce
-from utils import create_account, lock
+from setting import main_private_key, load_amount, chain_id, rpc, main_nonce
+from utils import create_account, lock, get_cfg
 
 
 class User:
 
-    def __init__(self, web3: Web3, total_account: int):
+    def __init__(self, total_account: int):
         # 初始化线程日志
         log_file = currentThread().getName()
         self.logger = logging.Logger(log_file)
@@ -21,7 +20,7 @@ class User:
         fh.setFormatter(fmt)
         self.logger.addHandler(fh)
         # 初始化对象
-        self.web3 = web3
+        self.web3 = Web3(WebsocketProvider(rpc), chain_id=chain_id)
         self.platon = PlatON(self.web3)
         self.ppos = Ppos(self.web3)
         self.ppos.need_analyze = False
@@ -30,7 +29,8 @@ class User:
 
     # 创建初始账户
     def create_accounts(self, total) -> dict:
-        global main_nonce, transfer_hash, restrict_hash
+        global main_nonce
+        transfer_hash, restrict_hash = '', ''
         accounts = {}
         for _ in range(total):
             address, private_key = create_account(self.web3)
@@ -39,25 +39,28 @@ class User:
             accounts[address] = account
             lock.acquire()      # 加锁
             # 转账
-            self.transfer(address, load_amount * 10 ** 18, main_nonce, main_private_key)
+            transfer_hash = self.transfer(address, load_amount * 10 ** 18, main_nonce, main_private_key)
+            self.logger.info(f'transfer nonce: {main_nonce}, hash: {transfer_hash}')
             main_nonce = main_nonce + 1
             # 锁仓
-            result = self.ppos.createRestrictingPlan(address, [{'Epoch': 2000, 'Amount': load_amount * 10 ** 18}], main_private_key, {"nonce": main_nonce})
+            result = self.ppos.createRestrictingPlan(address, [{'Epoch': 2000, 'Amount': load_amount * 10 ** 18}], main_private_key, get_cfg('nonce', main_nonce))
+            restrict_hash = result['hash']
+            self.logger.info(f'restrict nonce: {main_nonce}, hash: {restrict_hash}')
             main_nonce = main_nonce + 1
             lock.release()      # 解锁
-        self.platon.waitForTransactionReceipt(result['hash'])
-        # time.sleep(5)
+        self.platon.waitForTransactionReceipt(restrict_hash)
+        self.logger.info(f'all accounts: {accounts}')
         return accounts
 
     # 转账交易
     def transfer(self, to, amount, nonce, private_key):
         transaction_dict = {
             "to": to,
-            "gasPrice": self.platon.gasPrice,
+            "gasPrice": 100000000000,
             "gas": 21000,
             "nonce": nonce,
-            "data": '',
-            "chainId": self.web3.chain_id,
+            "data": "",
+            "chainId": chain_id,
             "value": amount,
         }
         signedTransactionDict = self.platon.account.signTransaction(transaction_dict, private_key)

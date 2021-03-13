@@ -1,5 +1,6 @@
+from copy import copy
 from threading import Lock
-from setting import cdf_address, load_funcs, load_ratios, web3
+from setting import cdf_address, load_funcs, load_ratios, web3, tx_cfg
 
 
 def gen_func_list(funcs, ratios):
@@ -32,6 +33,11 @@ def get_delegate_list_for_node(address, node_id):
             if delegated_info['NodeId'] is node_id:
                 delegateds.append(delegated_info)
     return delegateds
+
+def get_cfg(key, value):
+    cfg = copy(tx_cfg)
+    cfg[key] = value
+    return cfg
 
 
 # 压测信息生成
