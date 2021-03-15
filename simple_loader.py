@@ -1,7 +1,6 @@
 import random
 import time
 import logging
-from client_sdk_python import Account
 from simple_tx import SimpleTx
 import threading
 
