@@ -31,7 +31,7 @@ class Action(User):
         if not delegates_info:
             self.logger.info(f"Skip: The choice node is not delegated! node: {node_id}")
             return False
-        delegate_info = random.choice(delegates_info['Ret'])
+        delegate_info = random.choice(delegates_info)
         delegate = self.ppos.getDelegateInfo(delegate_info['StakingBlockNum'], account.address, node_id)['Ret']
         block_number = delegate['StakingBlockNum']
         max_amount = delegate['Released'] + delegate['ReleasedHes'] + delegate['RestrictingPlan'] + delegate['RestrictingPlanHes']

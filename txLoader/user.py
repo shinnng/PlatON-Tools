@@ -1,11 +1,11 @@
 import logging
 from threading import currentThread
-from client_sdk_python import Web3, WebsocketProvider
+from client_sdk_python import Web3
 from client_sdk_python.eth import PlatON
 from client_sdk_python.ppos import Ppos
 from hexbytes import HexBytes
 from account import Account
-from setting import main_private_key, load_amount, chain_id, rpc, main_nonce
+from setting import main_private_key, load_amount, chain_id, rpc, provider, main_nonce
 from utils import create_account, lock, get_cfg
 
 
@@ -20,7 +20,7 @@ class User:
         fh.setFormatter(fmt)
         self.logger.addHandler(fh)
         # 初始化对象
-        self.web3 = Web3(WebsocketProvider(rpc), chain_id=chain_id)
+        self.web3 = Web3(provider(rpc), chain_id=chain_id)
         self.platon = PlatON(self.web3)
         self.ppos = Ppos(self.web3)
         self.ppos.need_analyze = False

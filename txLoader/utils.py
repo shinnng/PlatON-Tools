@@ -30,7 +30,7 @@ def get_delegate_list_for_node(address, node_id):
     result = web3.ppos.getRelatedListByDelAddr(address)
     if result['Code'] == 0:
         for delegated_info in result['Ret']:
-            if delegated_info['NodeId'] is node_id:
+            if delegated_info['NodeId'] == node_id:
                 delegateds.append(delegated_info)
     return delegateds
 

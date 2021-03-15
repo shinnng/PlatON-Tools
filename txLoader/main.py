@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+import traceback
 from threading import Thread
 from action import Action
 from setting import load_accounts, load_duration, load_threads, web3
@@ -25,8 +26,8 @@ def load_threader():
         try:
             res_hash = load_func(account)
         except Exception as e:
-            print(f'Transaction error! address: {account.address}, nonce: {account.nonce}, res_hash: {res_hash}')
-            action.logger.error(f'Transaction error: {e}')
+            # print(f'Transaction error! address: {account.address}, nonce: {account.nonce}, res_hash: {res_hash}')
+            action.logger.error(f'Transaction error: {traceback.format_exc()}')
         action.logger.info(f'address: {account.address}, nonce: {account.nonce}, res_hash: {res_hash}')
         if res_hash is not False:
             account.nonce = account.nonce + 1
@@ -43,15 +44,14 @@ def load_threader():
         current_time = time.time()
 
 
-def get_tps(actions):
-    # while True:
-    time.sleep(10)
-    counter = 0
-    for action in actions:
-        thread_counter = action.delegate_counter + action.undelegate_counter + action.withdraw_reward_counter
-        counter = counter + thread_counter
-    return counter
-    # logging.info(f'counter: {counter}')
+def get_count():
+    while True:
+        time.sleep(10)
+        counter = 0
+        for action in actions:
+            thread_counter = action.delegate_counter + action.undelegate_counter + action.withdraw_reward_counter
+            counter = counter + thread_counter
+        logging.info(f'counter: {counter}')
 
 
 if __name__ == "__main__":
@@ -72,14 +72,11 @@ if __name__ == "__main__":
         logging.info(f'thread [{thread.name}] Started!')
     logging.info(f'loader is running at {web3.eth.blockNumber}, please waiting...')
     logging.info(f'(ps: you can see more from the threads log)')
-    # 启动查询线程    # todo:coding
-    # time.sleep(10)
-    # print(actions)
-    # t = Thread(target=get_tps, name=f'Tc', args=actions)
-    # t.start()
+    # 启动查询线程
+    t = Thread(target=get_count, name=f'Tc')
+    t.setDaemon(True)
+    t.start()
     # 等待多线程运行完成
     for thread in threads:
         thread.join()
-    counter = get_tps(actions)
-    logging.info(f'load done, request count: {counter}')
-    logging.info('######## load test done ########')
+    logging.info('load test is done!')
