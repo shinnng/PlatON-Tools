@@ -48,7 +48,7 @@ class User:
             self.logger.info(f'restrict nonce: {main_nonce}, hash: {restrict_hash}')
             main_nonce = main_nonce + 1
             lock.release()      # 解锁
-        self.platon.waitForTransactionReceipt(restrict_hash)
+        self.platon.waitForTransactionReceipt(restrict_hash, timeout=180)
         self.logger.info(f'all accounts: {accounts}')
         return accounts
 
