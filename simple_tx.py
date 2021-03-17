@@ -50,9 +50,7 @@ class SimpleTx:
     #     privateKeys[public_address] = private_key._key.get_private_key()
     #     addresses_df.loc[(prikey_manager, account_use, wallet_type, i, j), :] = [public_address]
 
-    def get_block(self):
-        pass
-
+    # rlp解码
     def decode_rlp(self, byte):
         if byte == b'':
             return byte.hex()
@@ -261,7 +259,10 @@ class SimpleTx:
 
 if __name__ == '__main__':
     tx = SimpleTx('http://192.168.120.121:6789', 201018)
-    address, private_key = 'lat1x84ksjuv2wgc7z0vksd2la7jyu4e469y5t8ves', '91e2830913698ebbd7c85c9dce4da6a96ca2fcd5b9bb9314637f0a99e830012c'
-    node_id = '7c31d0e2f716324c9051c322be59dd86194f28ad7b71e3bc3837062708b7207e82bed0d6e24691b9107549787b541e3c917ec7503e0ba3addd1340075188bad6'
-    tx.get_delegate_list(address)
-    tx.ppos.editCandidate(None, node_id, None, 'test', None, None, private_key, None)
+    # address, private_key = 'lat1x84ksjuv2wgc7z0vksd2la7jyu4e469y5t8ves', '91e2830913698ebbd7c85c9dce4da6a96ca2fcd5b9bb9314637f0a99e830012c'
+    # node_id = '7c31d0e2f716324c9051c322be59dd86194f28ad7b71e3bc3837062708b7207e82bed0d6e24691b9107549787b541e3c917ec7503e0ba3addd1340075188bad6'
+    # tx.get_delegate_list(address)
+
+    data = 'f853838203e980b842b8407c31d0e2f716324c9051c322be59dd86194f28ad7b71e3bc3837062708b7207e82bed0d6e24691b9107549787b541e3c917ec7503e0ba3addd1340075188bad680808584746573748080'
+    decoded = tx.decode_rlp(bytes.fromhex(data))
+    print(decoded)
