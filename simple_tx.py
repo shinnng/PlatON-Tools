@@ -1,4 +1,5 @@
 import time
+import rlp
 from client_sdk_python import HTTPProvider, Web3
 from client_sdk_python import eth, ppos, pip
 from client_sdk_python.middleware import geth_poa_middleware
@@ -12,7 +13,6 @@ class SimpleTx:
     tx_cfg = {'gasPrice': 3000000000000000}
 
     def __init__(self, rpc, chain_id):
-        print("############################################")
         self.rpc = rpc
         self.chain_id = chain_id
         self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id)
@@ -26,9 +26,9 @@ class SimpleTx:
     def create_account(self):
         account = self.platon.account.create()
         address = account.address
-        prikey = account.privateKey.hex()[2:]
-        logger.info(f"create account = {address}, {prikey}")
-        return address, prikey
+        private_key = account.privateKey.hex()[2:]
+        logger.info(f"create account = {address}, {private_key}")
+        return address, private_key
 
     # 创建HD钱包
     # todo: coding
@@ -53,6 +53,27 @@ class SimpleTx:
     def get_block(self):
         pass
 
+    def decode_rlp(self, byte):
+        if byte == b'':
+            return byte.hex()
+        decoded = rlp.decode(byte)
+        if type(decoded) is list:
+            values = []
+            for i, byte in enumerate(decoded):
+                value = self.decode_rlp(byte)
+                values.append(value)
+            return values
+        else:
+            length = len(decoded)
+            if length in [0, 20, 64, 128, 192]:
+                value = decoded.hex()
+                return value
+            try:
+                value = decoded.decode('utf-8')
+                return value
+            finally:
+                value = int.from_bytes(decoded, 'big')
+                return value
 
     # 转账交易
     def transfer(self, from_privatekey, to_address, amount):
@@ -60,14 +81,14 @@ class SimpleTx:
         nonce = self.platon.getTransactionCount(from_address)
         transaction_dict = {
             "to": to_address,
-            "gasPrice": self.web3.eth.gasPrice,
+            "gasPrice": self.platon.gasPrice,
             "gas": 21000,
             "nonce": nonce,
             "data": '',
             "chainId": self.chain_id,
             "value": amount,
         }
-        signedTransactionDict = self.web3.platon.account.signTransaction(
+        signedTransactionDict = self.platon.account.signTransaction(
             transaction_dict, from_privatekey
         )
         data = signedTransactionDict.rawTransaction
@@ -238,9 +259,9 @@ class SimpleTx:
             current_block = self.platon.blockNumber
 
 
-
 if __name__ == '__main__':
     tx = SimpleTx('http://192.168.120.121:6789', 201018)
     address, private_key = 'lat1x84ksjuv2wgc7z0vksd2la7jyu4e469y5t8ves', '91e2830913698ebbd7c85c9dce4da6a96ca2fcd5b9bb9314637f0a99e830012c'
     node_id = '7c31d0e2f716324c9051c322be59dd86194f28ad7b71e3bc3837062708b7207e82bed0d6e24691b9107549787b541e3c917ec7503e0ba3addd1340075188bad6'
     tx.get_delegate_list(address)
+    tx.ppos.editCandidate(None, node_id, None, 'test', None, None, private_key, None)
