@@ -1,7 +1,9 @@
 import random
 from client_sdk_python import Web3
-from user import User
-from utils import delegable_nodes, get_delegate_list_for_node, get_cfg
+
+from txLoader.setting import main_private_key
+from txLoader.user import User
+from txLoader.utils import delegable_nodes, get_delegate_list_for_node, get_cfg
 
 
 class Action(User):
@@ -47,3 +49,12 @@ class Action(User):
         result = self.ppos.withdrawDelegateReward(account.private_key, get_cfg("nonce", account.nonce))
         self.withdraw_reward_counter += 1
         return result['hash']
+
+    # 主账号给随机账号锁仓金额
+    def create_restricting_plan(self, account):
+        self.logger.info(f'nonce: {account.nonce}')
+        amount = random.randint(10 * 10 ** 18)
+        plan = [{'Epoch': 2000, 'Amount': amount}]
+        result = self.ppos.createRestrictingPlan(account, plan, main_private_key, get_cfg('nonce', main_nonce))
+        restrict_hash = result['hash']
+        self.logger.info(f'restrict nonce: {main_nonce}, hash: {restrict_hash}')
