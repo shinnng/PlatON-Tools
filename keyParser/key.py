@@ -38,9 +38,9 @@ def bech32_address_to_hex_address(address: str):
 if __name__ == '__main__':
     # print(private_key_to_address('64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e', 'atx'))
     # print(hex_address_to_bech32_address('1000000000000000000000000000000000000003', 'atp'))
-    hex_address = bech32_address_to_hex_address('lat1kvurep20767ahvrkraglgd9t34w0w2g059pmlx')
+    hex_address = bech32_address_to_hex_address('lax1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqmscn5j')
     print(f'hex_address = {hex_address}')
-    print(hex_address_to_bech32_address(hex_address, 'atx'))
+    print(hex_address_to_bech32_address(hex_address, 'lat'))
 
     # print(private_key_to_address('f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa', 'atp'))
 
