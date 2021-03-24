@@ -173,6 +173,17 @@ class SimpleTx:
         logger.info(f"get delegate list = {result['Code']}, {result}")
         return result
 
+    # 查询委托信息
+    def get_Verifier_list(self):
+        result = self.ppos.getVerifierList()
+        logger.info(f"get Verifier list = {result['Code']}, {result}")
+        return result
+
+    # 查询委托信息
+    def get_Validator_list(self):
+        result = self.ppos.getValidatorList()
+        logger.info(f"get Validator list = {result['Code']}, {result}")
+        return result
     # 获取账户对某个节点的委托信息
     def get_delegate_list_for_node(self, address, node_id):
         delegated_list = []
@@ -258,12 +269,13 @@ class SimpleTx:
 
 
 if __name__ == '__main__':
-    tx = SimpleTx('http://10.10.8.209:6888', 100)
-    main_address, main_private_key = 'lat1rzw6lukpltqn9rk5k59apjrf5vmt2ncv8uvfn7', 'f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa'
-    to_address = 'lat13plyuzklq965ft2a6cd0jmg6wcsaddgd6grf7p'
-
-    print(tx.platon.getBalance(main_address))
-    print(tx.platon.getBalance(to_address))
-    tx.transfer(main_private_key, to_address, 100 * 10 ** 18)
-    print(tx.platon.getBalance(main_address))
-    print(tx.platon.getBalance(to_address))
+    tx = SimpleTx('http://192.168.9.222:6788', 100)
+    address, private_key = 'lat1rzw6lukpltqn9rk5k59apjrf5vmt2ncv8uvfn7', 'f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa'
+    # node_id = '7c31d0e2f716324c9051c322be59dd86194f28ad7b71e3bc3837062708b7207e82bed0d6e24691b9107549787b541e3c917ec7503e0ba3addd1340075188bad6'
+    # tx.get_delegate_list(address)
+    # address1, private_key1 = tx.create_account()
+    #
+    # tx.transfer(private_key, address1, Web3.toWei(110000, 'ether'))
+    # url = 'http://192.168.9.222:6788'
+    # tx.staking(private_key1, 0, url, amount=Web3.toWei(100000, 'ether'))
+    tx.get_Verifier_list()
