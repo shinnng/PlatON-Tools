@@ -69,13 +69,9 @@ class SimpleTx:
             try:
                 value = decoded.decode('utf-8')
                 return value
-            except Exception:
-                pass
-            try:
+            finally:
                 value = int.from_bytes(decoded, 'big')
                 return value
-            except Exception:
-                pass
 
     # 转账交易
     def transfer(self, from_privatekey, to_address, amount):
@@ -117,10 +113,10 @@ class SimpleTx:
         bls_pubkey = node_info['blsPubKey']
         bls_proof = w3.admin.getSchnorrNIZKProve()
         benifit_address = Account.privateKeyToAccount(staking_private_key, self.hrp).address
-        result = self.ppos.createStaking(benifit_address, node_id, 'external_id', 'node_name', 'website',
+        result = self.ppos.createStaking(balance_type, benifit_address, node_id, 'external_id', 'node_name', 'website',
                                          'details',
                                          amount, version, version_sign, bls_pubkey, bls_proof, staking_private_key,
-                                         reward_per, balance_type)
+                                         reward_per)
         logger.info(f"staking result = {result['code']}, {result}")
         return result
 
@@ -259,3 +255,15 @@ class SimpleTx:
             logger.info(f'wait block: {current_block} -> {end_block}')
             time.sleep(5)
             current_block = self.platon.blockNumber
+
+
+if __name__ == '__main__':
+    tx = SimpleTx('http://10.10.8.209:6888', 100)
+    main_address, main_private_key = 'lat1rzw6lukpltqn9rk5k59apjrf5vmt2ncv8uvfn7', 'f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa'
+    to_address = 'lat13plyuzklq965ft2a6cd0jmg6wcsaddgd6grf7p'
+
+    print(tx.platon.getBalance(main_address))
+    print(tx.platon.getBalance(to_address))
+    tx.transfer(main_private_key, to_address, 100 * 10 ** 18)
+    print(tx.platon.getBalance(main_address))
+    print(tx.platon.getBalance(to_address))
