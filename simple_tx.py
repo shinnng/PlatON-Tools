@@ -101,7 +101,6 @@ class SimpleTx:
 
     # 锁仓交易
     def restricting(self, from_private_key, to_address, restricting_plan):
-        # ppos.need_analyze = False
         result = self.ppos.createRestrictingPlan(to_address, restricting_plan, from_private_key)
         logger.info(f"restricting result = {result['code']}")
         return result
@@ -117,10 +116,8 @@ class SimpleTx:
         bls_pubkey = node_info['blsPubKey']
         bls_proof = w3.admin.getSchnorrNIZKProve()
         benifit_address = Account.privateKeyToAccount(staking_private_key, self.hrp).address
-        result = self.ppos.createStaking(benifit_address, node_id, 'external_id', 'node_name', 'website',
-                                         'details',
-                                         amount, version, version_sign, bls_pubkey, bls_proof, staking_private_key,
-                                         reward_per, balance_type)
+        result = self.ppos.createStaking(benifit_address, node_id, 'external_id', 'node_name', 'website', 'details', amount, version, version_sign,
+                                         bls_pubkey, bls_proof, staking_private_key, reward_per, balance_type)
         logger.info(f"staking result = {result['code']}, {result}")
         return result
 
@@ -131,12 +128,9 @@ class SimpleTx:
         return result
 
     # 修改质押信息
-    def edit_staking(self, staking_private_key, node_id, benifit_address=None, external_id=None, node_name=None,
-                     website=None,
-                     details=None, reward_per=None):
-        result = self.ppos.editCandidate(staking_private_key, node_id, benifit_address, external_id, node_name, website,
-                                         details,
-                                         reward_per)
+    def edit_staking(self, staking_private_key, node_id, benifit_address=None, external_id=None, node_name=None, website=None, details=None,
+                     reward_per=None):
+        result = self.ppos.editCandidate(staking_private_key, node_id, benifit_address, external_id, node_name, website, details, reward_per)
         logger.info(f"edit staking result = {result['code']}, {result}")
         return result
 
@@ -206,8 +200,7 @@ class SimpleTx:
 
     # 创建升级提案
     def version_proposal(self, node_private_key, node_id, upgrade_version, voting_rounds):
-        result = self.pip.submitVersion(node_id, str(time.time()), upgrade_version, voting_rounds, node_private_key,
-                                        self.tx_cfg)
+        result = self.pip.submitVersion(node_id, str(time.time()), upgrade_version, voting_rounds, node_private_key, self.tx_cfg)
         logger.info(f"version proposal result = {result['code']}, {result}")
         return result
 
@@ -260,14 +253,3 @@ class SimpleTx:
             time.sleep(5)
             current_block = self.platon.blockNumber
 
-
-if __name__ == '__main__':
-    tx = SimpleTx('http://10.10.8.209:6888', 100)
-    main_address, main_private_key = 'lat1rzw6lukpltqn9rk5k59apjrf5vmt2ncv8uvfn7', 'f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa'
-    to_address = 'lat13plyuzklq965ft2a6cd0jmg6wcsaddgd6grf7p'
-
-    print(tx.platon.getBalance(main_address))
-    print(tx.platon.getBalance(to_address))
-    tx.transfer(main_private_key, to_address, 100 * 10 ** 18)
-    print(tx.platon.getBalance(main_address))
-    print(tx.platon.getBalance(to_address))
