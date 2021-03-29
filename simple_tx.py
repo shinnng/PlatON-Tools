@@ -69,9 +69,13 @@ class SimpleTx:
             try:
                 value = decoded.decode('utf-8')
                 return value
-            finally:
+            except Exception:
+                pass
+            try:
                 value = int.from_bytes(decoded, 'big')
                 return value
+            except Exception:
+                pass
 
     # 转账交易
     def transfer(self, from_privatekey, to_address, amount):
@@ -113,10 +117,10 @@ class SimpleTx:
         bls_pubkey = node_info['blsPubKey']
         bls_proof = w3.admin.getSchnorrNIZKProve()
         benifit_address = Account.privateKeyToAccount(staking_private_key, self.hrp).address
-        result = self.ppos.createStaking(balance_type, benifit_address, node_id, 'external_id', 'node_name', 'website',
+        result = self.ppos.createStaking(benifit_address, node_id, 'external_id', 'node_name', 'website',
                                          'details',
                                          amount, version, version_sign, bls_pubkey, bls_proof, staking_private_key,
-                                         reward_per)
+                                         reward_per, balance_type)
         logger.info(f"staking result = {result['code']}, {result}")
         return result
 
