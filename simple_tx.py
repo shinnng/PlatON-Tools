@@ -2,6 +2,7 @@ import time
 import rlp
 from client_sdk_python import HTTPProvider, Web3
 from client_sdk_python import eth, ppos, pip
+from client_sdk_python.admin import Admin
 from client_sdk_python.middleware import geth_poa_middleware
 from hexbytes import HexBytes
 from client_sdk_python.packages.platon_account.account import Account
@@ -127,12 +128,10 @@ class SimpleTx:
         return result
 
     # 修改质押信息
-    def edit_staking(self, staking_private_key, node_id, benifit_address=None, external_id=None, node_name=None,
-                     website=None,
-                     details=None, reward_per=None):
-        result = self.ppos.editCandidate(staking_private_key, node_id, benifit_address, external_id, node_name, website,
-                                         details,
-                                         reward_per)
+    def edit_staking(self, benifit_address, node_id, external_id, node_name, website,
+                     details, staking_private_key, reward_per):
+        result = self.ppos.editCandidate(benifit_address, node_id, external_id, node_name, website,
+                                         details, staking_private_key, reward_per)
         logger.info(f"edit staking result = {result['code']}, {result}")
         return result
 
@@ -184,6 +183,7 @@ class SimpleTx:
         result = self.ppos.getValidatorList()
         logger.info(f"get Validator list = {result['Code']}, {result}")
         return result
+
     # 获取账户对某个节点的委托信息
     def get_delegate_list_for_node(self, address, node_id):
         delegated_list = []
@@ -269,13 +269,20 @@ class SimpleTx:
 
 
 if __name__ == '__main__':
-    tx = SimpleTx('http://192.168.9.222:6788', 100)
-    address, private_key = 'lat1rzw6lukpltqn9rk5k59apjrf5vmt2ncv8uvfn7', 'f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa'
+    tx = SimpleTx('http://192.168.9.221:6789', 100)
+    # address, private_key = 'lat1rzw6lukpltqn9rk5k59apjrf5vmt2ncv8uvfn7', 'f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa'
     # node_id = '7c31d0e2f716324c9051c322be59dd86194f28ad7b71e3bc3837062708b7207e82bed0d6e24691b9107549787b541e3c917ec7503e0ba3addd1340075188bad6'
     # tx.get_delegate_list(address)
     # address1, private_key1 = tx.create_account()
+    pr, ad = '9ab5765429b38467cf653f4913bbf89b62dd96bde29ff0fbb6dd08cedf64543a', '1'
+    nodeid = '5801350aa672441894c753f41e5c7c52b2a4374e7902e52f4a8cacdc33cd1a6ca63bdb7ecda710b5a6500bfb53bb80bd046aba63fc326f11a0971b91bfb1225a'
     #
     # tx.transfer(private_key, address1, Web3.toWei(110000, 'ether'))
     # url = 'http://192.168.9.222:6788'
     # tx.staking(private_key1, 0, url, amount=Web3.toWei(100000, 'ether'))
-    tx.get_Verifier_list()
+    # tx.get_Verifier_list()
+    # account = 'lat19au5e52762l3ffsa9uzft9hzhxk5x0g9zmcxdq'
+    tx.edit_staking(node_id=nodeid, staking_private_key=pr, node_name='asb')
+    print(tx.get_candidate_info(nodeid))
+    # print(tx.platon.getBalance('lat1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrdyjj2v', 0))
+
