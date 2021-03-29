@@ -67,7 +67,7 @@ class Contract:
                 tx = {
                     'chainId': self.web3.chain_id,
                     'nonce': self.web3.eth.getTransactionCount(self.account.address),
-                    'gas': 2000000,
+                    'gas': 9424776,
                     'value': 0,
                     'gasPrice': 1000000000,
                     'to': self.address
@@ -78,7 +78,7 @@ class Contract:
                 tx = {
                     'chainId': self.web3.chain_id,
                     'nonce': self.web3.eth.getTransactionCount(self.account.address),
-                    'gas': 2000000,
+                    'gas': 9424776,
                     'value': 0,
                     'gasPrice': 1000000000,
                     'to': self.address
@@ -103,7 +103,7 @@ class Contract:
             tx = {
                 'chainId': self.web3.chain_id,
                 'nonce': self.web3.eth.getTransactionCount(self.account.address),
-                'gas': 2000000,
+                'gas': 9424776,
                 'value': 0,
                 'gasPrice': 1000000000,
                 'to': self.address
