@@ -145,6 +145,21 @@ class SimpleTx:
         result = self.ppos.getCandidateInfo(node_id)
         logger.info(f"get candidate info = {result['Code']}, {result}")
 
+    # 查询质押信息
+    def get_verifier_list(self):
+        result = self.ppos.getVerifierList()
+        logger.info(f"get Verifier list = {result['Code']}, {result}")
+
+    # 查询质押信息
+    def get_validator_list(self):
+        result = self.ppos.getValidatorList()
+        logger.info(f"get Validator list = {result['Code']}, {result}")
+
+    # 查询质押信息
+    def get_candidate_list(self):
+        result = self.ppos.getCandidateList()
+        logger.info(f"get candidate list = {result['Code']}, {result}")
+
     # 创建委托
     def delegate(self, delegation_private_key, node_id, balance_type, amount=10 * 10 ** 18):
         result = self.ppos.delegate(balance_type, node_id, amount, delegation_private_key)
@@ -252,4 +267,5 @@ class SimpleTx:
             logger.info(f'wait block: {current_block} -> {end_block}')
             time.sleep(5)
             current_block = self.platon.blockNumber
+
 
