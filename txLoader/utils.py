@@ -1,6 +1,6 @@
 from copy import copy
 from threading import Lock
-from txLoader.setting import cdf_address, load_funcs, load_ratios, web3, tx_cfg
+from setting import cdf_address, load_funcs, load_ratios, web3, tx_cfg
 
 
 def gen_func_list(funcs, ratios):

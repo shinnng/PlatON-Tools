@@ -1,9 +1,9 @@
 from functools import wraps
 
-from alaya import Web3
-from alaya.contract import ContractFunction
-from alaya.packages.platon_account.signers.local import LocalAccount
-from alaya.utils.abi import filter_by_name
+from client_sdk_python import Web3
+from client_sdk_python.contract import ContractFunction
+from client_sdk_python.packages.platon_account.signers.local import LocalAccount
+from client_sdk_python.utils.abi import filter_by_name
 
 
 def deploy(web3: Web3, bytecode: str, abi: str, account: LocalAccount, **constructor_args):
@@ -11,7 +11,7 @@ def deploy(web3: Web3, bytecode: str, abi: str, account: LocalAccount, **constru
     contract = web3.eth.contract(abi=abi, bytecode=bytecode)
     transaction = {
         'gas': 4012388,
-        'gasPrice': 100000000,
+        'gasPrice': 1000000000,
         "chainId": web3.chain_id,
         "nonce": nonce,
     }
@@ -32,7 +32,7 @@ class Contract:
         self.abi = abi
         self.address = address
         self.account = account
-        self.contract = web3.eth.contract(abi=abi, bytecode=bytecode)
+        self.contract = web3.eth.contract(address=address, abi=abi, bytecode=bytecode)
         self.functions = self.contract.functions
         self.events = self.contract.events
         self._set_functions(self.contract.functions)
@@ -64,21 +64,12 @@ class Contract:
             fn_abi = filter_by_name(func.fn_name, self.abi)
             assert len(fn_abi) == 1, 'The method cannot be found in the ABI'
             if fn_abi[0].get('stateMutability') == 'view':
-                tx = {
-                    'chainId': self.web3.chain_id,
-                    'nonce': self.web3.eth.getTransactionCount(self.account.address),
-                    'gas': 9424776,
-                    'value': 0,
-                    'gasPrice': 1000000000,
-                    'to': self.address
-                }
-                txn = func(*args, **kwargs).buildTransaction(tx)
-                return self.web3.eth.call(txn)
+                return func(*args, **kwargs).call()
             else:
                 tx = {
                     'chainId': self.web3.chain_id,
                     'nonce': self.web3.eth.getTransactionCount(self.account.address),
-                    'gas': 9424776,
+                    'gas': 4012388,
                     'value': 0,
                     'gasPrice': 1000000000,
                     'to': self.address
@@ -103,7 +94,7 @@ class Contract:
             tx = {
                 'chainId': self.web3.chain_id,
                 'nonce': self.web3.eth.getTransactionCount(self.account.address),
-                'gas': 9424776,
+                'gas': 4012388,
                 'value': 0,
                 'gasPrice': 1000000000,
                 'to': self.address

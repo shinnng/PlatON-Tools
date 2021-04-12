@@ -3,9 +3,9 @@ import random
 import time
 import traceback
 from threading import Thread
-from txLoader.action import Action
-from txLoader.setting import load_accounts, load_duration, load_threads, web3
-from txLoader.utils import funcs_list
+from action import Action
+from setting import load_accounts, load_duration, load_threads, web3
+from utils import funcs_list
 
 
 def load_threader():

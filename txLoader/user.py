@@ -4,9 +4,9 @@ from client_sdk_python import Web3
 from client_sdk_python.eth import PlatON
 from client_sdk_python.ppos import Ppos
 from hexbytes import HexBytes
-from txLoader.account import Account
-from txLoader.setting import main_private_key, load_amount, chain_id, rpc, provider, main_nonce
-from txLoader.utils import create_account, lock, get_cfg
+from account import Account
+from setting import main_private_key, load_amount, chain_id, rpc, provider, main_nonce
+from utils import create_account, lock, get_cfg
 
 
 class User:

@@ -10,12 +10,12 @@ from loguru import logger
 
 # 通用信息
 class SimpleTx:
-    tx_cfg = {'gasPrice': 3000000000000000}
+    tx_cfg = {'gasPrice': 1500000000000000}
 
-    def __init__(self, rpc, chain_id):
+    def __init__(self, rpc, chain_id, hrp):
         self.rpc = rpc
         self.chain_id = chain_id
-        self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id)
+        self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id, hrp_type=hrp)
         self.web3.middleware_stack.inject(geth_poa_middleware, layer=0)
         self.hrp = self.web3.net_type
         self.platon = eth.PlatON(self.web3)
