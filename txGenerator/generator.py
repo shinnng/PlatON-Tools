@@ -5,15 +5,16 @@ from client_sdk_python import Web3, HTTPProvider, eth as Eth, ppos as Ppos, admi
 from hexbytes import HexBytes
 from ruamel import yaml
 
-chain_id = 201030
+chain_id = 100
 w3_url = 'http://10.1.1.51:6789'
-main_account_prikey = 'f51ca759562e1daf9e5302d121f933a8152915d34fcbc27e542baf256b5e4b74'
-cdf_account = 'atx1ur2hg0u9wt5qenmkcxlp7ysvaw6yupt4xerq62'
+main_account_prikey = 'f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa'
+cdf_account = 'lat1kvurep20767ahvrkraglgd9t34w0w2g059pmlx'
 
 w3 = Web3(HTTPProvider(w3_url), chain_id=chain_id)
 platon = Eth.Eth(w3)
 ppos = Ppos.Ppos(w3)
 debug = Debug.Debug(w3)
+
 
 # init_amount = lambda: w3.toWei(uniform(300, 500), 'ether')
 
@@ -58,11 +59,22 @@ def submit_transfer(from_private_key, to_address, amount):
     return result
 
 
-def submit_restricting(from_private_key, to_address, amount, epoch):
-    restricting_plan = [{'Epoch': epoch, 'Amount': amount}]
+def submit_restricting(from_private_key, to_address, parameter_list):
+    restricting_plan = [{'Epoch': parameter_list[0]['epoch'], 'Amount': parameter_list[0]['amount']},
+                        {'Epoch': parameter_list[1]['epoch'], 'Amount': parameter_list[1]['amount']},
+                        {'Epoch': parameter_list[2]['epoch'], 'Amount': parameter_list[2]['amount']},
+                        {'Epoch': parameter_list[3]['epoch'], 'Amount': parameter_list[3]['amount']},
+                        {'Epoch': parameter_list[4]['epoch'], 'Amount': parameter_list[4]['amount']},
+                        {'Epoch': parameter_list[5]['epoch'], 'Amount': parameter_list[5]['amount']},
+                        {'Epoch': parameter_list[6]['epoch'], 'Amount': parameter_list[6]['amount']},
+                        {'Epoch': parameter_list[7]['epoch'], 'Amount': parameter_list[7]['amount']},
+                        {'Epoch': parameter_list[8]['epoch'], 'Amount': parameter_list[8]['amount']},
+                        {'Epoch': parameter_list[9]['epoch'], 'Amount': parameter_list[9]['amount']},
+                        {'Epoch': parameter_list[10]['epoch'], 'Amount': parameter_list[10]['amount']},
+                        {'Epoch': parameter_list[11]['epoch'], 'Amount': parameter_list[11]['amount']}]
     result = ppos.createRestrictingPlan(to_address, restricting_plan, from_private_key)
-    from_address = platon.account.privateKeyToAccount(from_private_key, w3.net_type).address
-    print(f'Restricting: {amount}, {epoch}, {from_address}, {to_address}')
+    # from_address = platon.account.privateKeyToAccount(from_private_key, w3.net_type).address
+    print(f'Restricting: {to_address, result}')
     return result
 
 
@@ -157,18 +169,18 @@ def transfer(account, amount, privatekey):
 
 @cli.command()
 @click.option('--account', type=click.Path(exists=True), prompt='')
-@click.option('--amount', type=float, default=100)
-@click.option('--epoch', type=int)
 @click.option('--privatekey', type=str, prompt='')
-def restricting(account, amount, epoch, privatekey):
+def restricting(privatekey, account):
     with open(account, 'r') as f:
         accounts = yaml.safe_load(f)
-    amount = w3.toWei(amount, 'ether')
-    epoch_tmp = epoch
     for account in accounts:
-        if not epoch:
-            epoch_tmp = randint(1, 10)
-        submit_restricting(privatekey, account['address'], amount, epoch_tmp)
+        parameter_list = []
+        for i in range(12):
+            amount_tmp = w3.toWei(uniform(100, 500), 'ether')
+            epoch_tmp = randint(1, 20)
+            parameter_list.append({'epoch': epoch_tmp, 'amount': amount_tmp})
+        # parameter_list = parameter_list
+        submit_restricting(privatekey, account['address'], parameter_list)
 
 
 @cli.command()
