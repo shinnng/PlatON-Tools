@@ -1,4 +1,4 @@
-from client_sdk_python import Web3, HTTPProvider, WebsocketProvider
+from alaya import Web3, HTTPProvider, WebsocketProvider
 
 # 链基础设置
 # rpc = 'ws://106.13.70.56:6791'
@@ -10,7 +10,6 @@ from client_sdk_python import Web3, HTTPProvider, WebsocketProvider
 rpc = 'http://192.168.120.121:6789'
 provider = HTTPProvider
 chain_id = 100
-hrp = 'lat'
 main_address, main_private_key = 'lat1rzw6lukpltqn9rk5k59apjrf5vmt2ncv8uvfn7', 'f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa'
 cdf_address, cdf_private_key = 'lat1kvurep20767ahvrkraglgd9t34w0w2g059pmlx', ''
 
@@ -30,7 +29,7 @@ tx_cfg = {"gas": 1000000, "gasPrice": 20000000000}
 
 
 # 对象初始化
-web3 = Web3(provider(rpc), chain_id=chain_id, hrp_type=hrp)
+web3 = Web3(provider(rpc), chain_id=chain_id)
 main_nonce = web3.platon.getTransactionCount(main_address)
 
 

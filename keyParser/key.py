@@ -1,5 +1,5 @@
-from client_sdk_python.packages.platon_keys.datatypes import PrivateKey
-from client_sdk_python.packages.platon_keys.utils import address as Address
+from alaya.packages.platon_keys.datatypes import PrivateKey
+from alaya.packages.platon_keys.utils import address as Address
 
 
 def private_key_to_address(private_key: str, prefix=None):
@@ -38,9 +38,9 @@ def bech32_address_to_hex_address(address: str):
 if __name__ == '__main__':
     # print(private_key_to_address('64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e', 'atx'))
     # print(hex_address_to_bech32_address('1000000000000000000000000000000000000003', 'atp'))
-    hex_address = bech32_address_to_hex_address('lax1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqmscn5j')
+    hex_address = bech32_address_to_hex_address('lat1rzw6lukpltqn9rk5k59apjrf5vmt2ncv8uvfn7')
     print(f'hex_address = {hex_address}')
-    print(hex_address_to_bech32_address(hex_address, 'lat'))
+    print(hex_address_to_bech32_address(hex_address, 'atp'))
 
     # print(private_key_to_address('f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa', 'atp'))
 

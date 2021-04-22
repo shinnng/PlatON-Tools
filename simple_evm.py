@@ -1,9 +1,9 @@
 from functools import wraps
 
-from client_sdk_python import Web3
-from client_sdk_python.contract import ContractFunction
-from client_sdk_python.packages.platon_account.signers.local import LocalAccount
-from client_sdk_python.utils.abi import filter_by_name
+from alaya import Web3
+from alaya.contract import ContractFunction
+from alaya.packages.platon_account.signers.local import LocalAccount
+from alaya.utils.abi import filter_by_name
 
 
 def deploy(web3: Web3, bytecode: str, abi: str, account: LocalAccount, **constructor_args):

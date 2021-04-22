@@ -1,10 +1,10 @@
 import time
 import rlp
-from client_sdk_python import HTTPProvider, Web3
-from client_sdk_python import eth, ppos, pip
-from client_sdk_python.middleware import geth_poa_middleware
+from alaya import HTTPProvider, Web3
+from alaya import eth, ppos, pip
+from alaya.middleware import geth_poa_middleware
 from hexbytes import HexBytes
-from client_sdk_python.packages.platon_account.account import Account
+from alaya.packages.platon_account.account import Account
 from loguru import logger
 
 
@@ -12,10 +12,10 @@ from loguru import logger
 class SimpleTx:
     tx_cfg = {'gasPrice': 3000000000000000}
 
-    def __init__(self, rpc, chain_id, hrp):
+    def __init__(self, rpc, chain_id):
         self.rpc = rpc
         self.chain_id = chain_id
-        self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id, hrp_type=hrp)
+        self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id)
         self.web3.middleware_stack.inject(geth_poa_middleware, layer=0)
         self.hrp = self.web3.net_type
         self.platon = eth.PlatON(self.web3)
