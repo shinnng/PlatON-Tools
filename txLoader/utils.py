@@ -42,7 +42,7 @@ def get_cfg(key, value):
 
 # 压测信息生成
 delegable_nodes = get_delegable_nodes(cdf_address)
-assert delegable_nodes, 'delegable nodes can not be null!'
+# assert delegable_nodes, 'delegable nodes can not be null!'
 funcs_list = gen_func_list(load_funcs, load_ratios)
 assert funcs_list, 'funcs list can not be null!'
 lock = Lock()

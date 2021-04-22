@@ -10,7 +10,7 @@ from loguru import logger
 
 # 通用信息
 class SimpleTx:
-    tx_cfg = {'gasPrice': 1500000000000000}
+    tx_cfg = {'gasPrice': 3000000000000000}
 
     def __init__(self, rpc, chain_id, hrp):
         self.rpc = rpc

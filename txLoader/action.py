@@ -1,7 +1,8 @@
 import random
-from client_sdk_python import Web3
 
-from setting import main_private_key
+from hexbytes import HexBytes
+
+from setting import main_address, chain_id
 from user import User
 from utils import delegable_nodes, get_delegate_list_for_node, get_cfg
 
@@ -14,6 +15,24 @@ class Action(User):
         self.undelegate_counter = 0
         self.withdraw_reward_counter = 0
 
+    # test
+    def transfer(self, account):
+        transaction_dict = {
+            "to": main_address,
+            "gasPrice": 1000000000,
+            "gas": 21000,
+            "nonce": account.nonce,
+            "data": '',
+            "chainId": chain_id,
+            "value": 1 * 10 * 17,
+        }
+        signedTransactionDict = self.platon.account.signTransaction(
+            transaction_dict, account.private_key
+        )
+        data = signedTransactionDict.rawTransaction
+        tx_hash = HexBytes(self.platon.sendRawTransaction(data)).hex()
+        return tx_hash
+
     # 使用随机账号和金额，委托随机节点
     def delegate(self, account):
         node = random.choice(delegable_nodes)
@@ -21,7 +40,8 @@ class Action(User):
         # balance_type = 0
         amount = int(random.uniform(10, 100) * 10 ** 18)
         self.logger.info(f"node: {node['NodeId']}, balance_type: {balance_type}, amount: {amount}")
-        result = self.ppos.delegate(balance_type, node['NodeId'], amount, account.private_key, get_cfg("nonce", account.nonce))
+        result = self.ppos.delegate(balance_type, node['NodeId'], amount, account.private_key,
+                                    get_cfg("nonce", account.nonce))
         self.delegate_counter += 1
         return result['hash']
 
@@ -36,10 +56,12 @@ class Action(User):
         delegate_info = random.choice(delegates_info)
         delegate = self.ppos.getDelegateInfo(delegate_info['StakingBlockNum'], account.address, node_id)['Ret']
         block_number = delegate['StakingBlockNum']
-        max_amount = delegate['Released'] + delegate['ReleasedHes'] + delegate['RestrictingPlan'] + delegate['RestrictingPlanHes']
+        max_amount = delegate['Released'] + delegate['ReleasedHes'] + delegate['RestrictingPlan'] + delegate[
+            'RestrictingPlanHes']
         amount = random.randint(10 * 10 ** 18, max_amount)
         self.logger.info(f"node: {node_id}, block_number: {block_number}, amount: {amount}")
-        result = self.ppos.withdrewDelegate(block_number, node_id, amount, account.private_key, get_cfg("nonce", account.nonce))
+        result = self.ppos.withdrewDelegate(block_number, node_id, amount, account.private_key,
+                                            get_cfg("nonce", account.nonce))
         self.undelegate_counter += 1
         return result['hash']
 

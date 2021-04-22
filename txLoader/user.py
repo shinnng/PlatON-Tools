@@ -39,7 +39,7 @@ class User:
             accounts[address] = account
             lock.acquire()      # 加锁
             # 转账
-            transfer_hash = self.transfer(address, load_amount * 10 ** 18, main_nonce, main_private_key)
+            transfer_hash = self.init_transfer(address, load_amount * 10 ** 18, main_nonce, main_private_key)
             self.logger.info(f'transfer nonce: {main_nonce}, hash: {transfer_hash}')
             main_nonce = main_nonce + 1
             # 锁仓
@@ -53,7 +53,7 @@ class User:
         return accounts
 
     # 转账交易
-    def transfer(self, to, amount, nonce, private_key):
+    def init_transfer(self, to, amount, nonce, private_key):
         transaction_dict = {
             "to": to,
             "gasPrice": 100000000000,
