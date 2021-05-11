@@ -5,3 +5,5 @@
 **/*.code-workspace
 **/*.bak
 **/.idea/*
+
+**/*debug*
