@@ -83,7 +83,7 @@ class Contract:
     def _event_wrap(self, func):
         @wraps(func)
         def call_selector(*args, **kwargs):
-            return func.processReceipt(*args, **kwargs)
+            return func().processReceipt(*args, **kwargs)
 
         return call_selector
 
