@@ -20,8 +20,8 @@ load_threads = 1  # 压测线程数
 load_accounts = 1  # 每个线程使用账户数
 load_duration = 3600 * 24 * 7  # 压测时长/s
 load_amount = 200000  # 压测账户的初始金额
-load_funcs = ['transfer']  # 需要压测的请求,从action中选择
-load_ratios = [1]  # 压测请求的发送比率
+load_funcs = ['transfer']  # 需要压测的请求，从action.py中选择压测方法名，填入数组中
+load_ratios = [1]  # 配置压测请求的发送比率，与load_funcs数组中的方法一一对应，可以填入任意非负整数
 # is_hold_nonce = True  # todo: coding
 
 
