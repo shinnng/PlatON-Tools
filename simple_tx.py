@@ -1,7 +1,7 @@
 import time
 import rlp
 from client_sdk_python import HTTPProvider, Web3
-from client_sdk_python import eth, ppos, pip
+from client_sdk_python import eth, ppos, pip, admin, personal, txpool, debug
 from client_sdk_python.middleware import geth_poa_middleware
 from hexbytes import HexBytes
 from client_sdk_python.packages.platon_account.account import Account
@@ -12,15 +12,19 @@ from loguru import logger
 class SimpleTx:
     tx_cfg = {'gasPrice': 3000000000000000}
 
-    def __init__(self, rpc, chain_id, hrp):
+    def __init__(self, rpc, chain_id):
         self.rpc = rpc
         self.chain_id = chain_id
-        self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id, hrp_type=hrp)
+        self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id)
         self.web3.middleware_stack.inject(geth_poa_middleware, layer=0)
         self.hrp = self.web3.net_type
         self.platon = eth.PlatON(self.web3)
         self.ppos = ppos.Ppos(self.web3)
         self.pip = pip.Pip(self.web3)
+        self.admin = admin.Admin(self.web3)
+        self.personal = personal.Personal(self.web3)
+        self.txpool = txpool.TxPool(self.web3)
+        self.debug = debug.Debug(self.web3)
 
     # 创建账户
     def create_account(self):
@@ -235,6 +239,8 @@ class SimpleTx:
     def vote(self, node_private_key, node_url, proposal_id, vote_type):
         w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id)
         program_version = w3.admin.getProgramVersion()['Version']
+
+        print(f'program_version == {program_version}')
         version_sign = w3.admin.getProgramVersion()['Sign']
         node_id = w3.admin.nodeInfo['id']
         # proposal_id = w3.pip.listProposal().get('Ret')[0].get('ProposalID')
