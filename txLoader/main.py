@@ -32,7 +32,7 @@ def load_threader():
         if res_hash is not False:
             account.nonce = account.nonce + 1
             # 对异常交易进行恢复
-            if account.nonce % 20 == 0:
+            if account.nonce % 100 == 0:
                 try:
                     action.platon.waitForTransactionReceipt(res_hash, 20)
                 except Exception as e:

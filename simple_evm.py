@@ -72,10 +72,9 @@ class Contract:
                     'gas': 4012388,
                     'value': 0,
                     'gasPrice': 1000000000,
-                    'to': self.address
                 }
                 txn = func(*args, **kwargs).buildTransaction(tx)
-                signed_txn = self.web3.eth.account.signTransaction(txn, private_key=self.owner.privateKey.hex())
+                signed_txn = self.web3.eth.account.signTransaction(txn, private_key=self.account.privateKey.hex())
                 tx_hash = self.web3.eth.sendRawTransaction(signed_txn.rawTransaction).hex()
                 return self.web3.eth.waitForTransactionReceipt(tx_hash)
 
@@ -84,7 +83,7 @@ class Contract:
     def _event_wrap(self, func):
         @wraps(func)
         def call_selector(*args, **kwargs):
-            return func.processReceipt(*args, **kwargs)
+            return func().processReceipt(*args, **kwargs)
 
         return call_selector
 

@@ -1,7 +1,7 @@
 import time
 import rlp
 from client_sdk_python import HTTPProvider, Web3
-from client_sdk_python import eth, ppos, pip
+from client_sdk_python import eth, ppos, pip, admin, personal, txpool, debug
 from client_sdk_python.middleware import geth_poa_middleware
 from hexbytes import HexBytes
 from client_sdk_python.packages.platon_account.account import Account
@@ -10,21 +10,25 @@ from loguru import logger
 
 # 通用信息
 class SimpleTx:
-    tx_cfg = {'gasPrice': 1500000000000000}
+    tx_cfg = {'gasPrice': 3000000000000000}
 
-    def __init__(self, rpc, chain_id, hrp):
+    def __init__(self, rpc, chain_id):
         self.rpc = rpc
         self.chain_id = chain_id
-        self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id, hrp_type=hrp)
+        self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id)
         self.web3.middleware_stack.inject(geth_poa_middleware, layer=0)
         self.hrp = self.web3.net_type
         self.platon = eth.PlatON(self.web3)
         self.ppos = ppos.Ppos(self.web3)
         self.pip = pip.Pip(self.web3)
+        self.admin = admin.Admin(self.web3)
+        self.personal = personal.Personal(self.web3)
+        self.txpool = txpool.TxPool(self.web3)
+        self.debug = debug.Debug(self.web3)
 
     # 创建账户
     def create_account(self):
-        account = self.platon.account.create()
+        account = self.platon.account.create(net_type=self.hrp)
         address = account.address
         private_key = account.privateKey.hex()[2:]
         logger.info(f"create account = {address}, {private_key}")
@@ -116,8 +120,8 @@ class SimpleTx:
         bls_pubkey = node_info['blsPubKey']
         bls_proof = w3.admin.getSchnorrNIZKProve()
         benifit_address = Account.privateKeyToAccount(staking_private_key, self.hrp).address
-        result = self.ppos.createStaking(benifit_address, node_id, 'external_id', 'node_name', 'website', 'details', amount, version, version_sign,
-                                         bls_pubkey, bls_proof, staking_private_key, reward_per, balance_type)
+        result = self.ppos.createStaking(balance_type, benifit_address, node_id, 'external_id', 'node_name', 'website', 'details', amount, version, version_sign,
+                                         bls_pubkey, bls_proof, staking_private_key, reward_per)
         logger.info(f"staking result = {result['code']}, {result}")
         return result
 
@@ -145,17 +149,17 @@ class SimpleTx:
         result = self.ppos.getCandidateInfo(node_id)
         logger.info(f"get candidate info = {result['Code']}, {result}")
 
-    # 查询质押信息
-    def get_verifier_list(self):
-        result = self.ppos.getVerifierList()
-        logger.info(f"get Verifier list = {result['Code']}, {result}")
-
-    # 查询质押信息
+    # 查询当前轮验证人信息
     def get_validator_list(self):
         result = self.ppos.getValidatorList()
         logger.info(f"get Validator list = {result['Code']}, {result}")
 
-    # 查询质押信息
+    # 查询验证人信息
+    def get_verifier_list(self):
+        result = self.ppos.getVerifierList()
+        logger.info(f"get Verifier list = {result['Code']}, {result}")
+
+    # 查询全部质押信息
     def get_candidate_list(self):
         result = self.ppos.getCandidateList()
         logger.info(f"get candidate list = {result['Code']}, {result}")
@@ -235,6 +239,8 @@ class SimpleTx:
     def vote(self, node_private_key, node_url, proposal_id, vote_type):
         w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id)
         program_version = w3.admin.getProgramVersion()['Version']
+
+        print(f'program_version == {program_version}')
         version_sign = w3.admin.getProgramVersion()['Sign']
         node_id = w3.admin.nodeInfo['id']
         # proposal_id = w3.pip.listProposal().get('Ret')[0].get('ProposalID')
