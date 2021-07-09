@@ -6,4 +6,4 @@
 **/*.bak
 **/.idea/*
 
-**/*debug*
+#**/*debug*
