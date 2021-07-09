@@ -12,10 +12,10 @@ from loguru import logger
 class SimpleTx:
     tx_cfg = {'gasPrice': 3000000000000000}
 
-    def __init__(self, rpc, chain_id):
+    def __init__(self, rpc, chain_id, hrp=None):
         self.rpc = rpc
         self.chain_id = chain_id
-        self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id)
+        self.web3 = Web3(HTTPProvider(rpc), chain_id=chain_id, hrp_type=hrp)
         self.web3.middleware_stack.inject(geth_poa_middleware, layer=0)
         self.hrp = self.web3.net_type
         self.platon = eth.PlatON(self.web3)
@@ -25,6 +25,9 @@ class SimpleTx:
         self.personal = personal.Personal(self.web3)
         self.txpool = txpool.TxPool(self.web3)
         self.debug = debug.Debug(self.web3)
+        # 不使用固定gas,通过预估gas来发送交易
+        self.ppos.need_quota_gas = False
+        self.pip.need_quota_gas = False
 
     # 创建账户
     def create_account(self):
@@ -100,18 +103,21 @@ class SimpleTx:
         data = signedTransactionDict.rawTransaction
         result = HexBytes(self.platon.sendRawTransaction(data)).hex()
         result = self.platon.waitForTransactionReceipt(result)
-        logger.info(f'transfer result = {result}')
-        return result
+        if result['status'] == 1:
+            logger.info(f'transfer result = 0')
+        else:
+            logger.info(f'transfer result = {result}')
+        return result['status']
 
     # 锁仓交易
-    def restricting(self, from_private_key, to_address, restricting_plan):
-        result = self.ppos.createRestrictingPlan(to_address, restricting_plan, from_private_key)
+    def restricting(self, from_private_key, to_address, restricting_plan, tx_cfg=None):
+        result = self.ppos.createRestrictingPlan(to_address, restricting_plan, from_private_key, tx_cfg)
         logger.info(f"restricting result = {result['code']}")
         return result
 
     # 创建质押
     def staking(self, staking_private_key, balance_type, node_url, amount=10 ** 18 * 2000000, reward_per=1000):
-        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id)
+        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id, hrp_type=self.hrp)
         version_info = w3.admin.getProgramVersion()
         version = version_info['Version']
         version_sign = version_info['Sign']
@@ -180,9 +186,8 @@ class SimpleTx:
     def get_delegable_nodes(self, cdf_account):
         result = self.ppos.getCandidateList()
         delegable_nodes = [i for i in result['Ret'] if i['StakingAddress'] != cdf_account]
-        result['Ret'] = delegable_nodes
-        logger.info(f"get delegable nodes = {result['Code']}, {result}")
-        return result
+        logger.info(f"get delegable nodes = {delegable_nodes}")
+        return delegable_nodes
 
     # 查询委托信息
     def get_delegate_list(self, delegation_address):
@@ -237,7 +242,7 @@ class SimpleTx:
 
     # 提案投票
     def vote(self, node_private_key, node_url, proposal_id, vote_type):
-        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id)
+        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id, hrp_type=self.hrp)
         program_version = w3.admin.getProgramVersion()['Version']
 
         print(f'program_version == {program_version}')
@@ -252,7 +257,7 @@ class SimpleTx:
 
     # 版本声明
     def declare_version(self, node_private_key, node_url):
-        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id)
+        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id, hrp_type=self.hrp)
         node_id = w3.admin.nodeInfo['id']
         program_version = w3.admin.getProgramVersion()['Version']
         version_sign = w3.admin.getProgramVersion()['Sign']
