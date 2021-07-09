@@ -117,7 +117,7 @@ class SimpleTx:
 
     # 创建质押
     def staking(self, staking_private_key, balance_type, node_url, amount=10 ** 18 * 2000000, reward_per=1000):
-        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id)
+        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id, hrp_type=self.hrp)
         version_info = w3.admin.getProgramVersion()
         version = version_info['Version']
         version_sign = version_info['Sign']
@@ -242,7 +242,7 @@ class SimpleTx:
 
     # 提案投票
     def vote(self, node_private_key, node_url, proposal_id, vote_type):
-        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id)
+        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id, hrp_type=self.hrp)
         program_version = w3.admin.getProgramVersion()['Version']
 
         print(f'program_version == {program_version}')
@@ -257,7 +257,7 @@ class SimpleTx:
 
     # 版本声明
     def declare_version(self, node_private_key, node_url):
-        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id)
+        w3 = Web3(HTTPProvider(node_url), chain_id=self.chain_id, hrp_type=self.hrp)
         node_id = w3.admin.nodeInfo['id']
         program_version = w3.admin.getProgramVersion()['Version']
         version_sign = w3.admin.getProgramVersion()['Sign']
